@@ -37,7 +37,9 @@ def assign_halves(df: pd.DataFrame, split_type: str, seed: int) -> pd.Series:
     rng = np.random.default_rng(seed)
 
     def half_map(keys):
-        uniq = np.array(sorted(pd.unique(keys)))
+        # sort by string repr: WhaleID mixes ints with combined IDs like
+        # "6070/6068", so a plain sort raises on str-vs-int comparison.
+        uniq = np.array(sorted(pd.unique(keys), key=str), dtype=object)
         rng.shuffle(uniq)
         cut = len(uniq) // 2
         m = {k: ("A" if i < cut else "B") for i, k in enumerate(uniq)}

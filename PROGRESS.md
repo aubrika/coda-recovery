@@ -66,6 +66,20 @@ The one clean collapse (by_individual) is best explained by sample size, not by
 absence of structure. Effective structural resolution ≈ 8–12 of 21 types at full
 budget.
 
-## Next
-- M4: confusion matrix / transition-triptych / volumetric embedding (gate on the
-  eigenvalue spectrum first, spec 8.1) + README write-up with limitations.
+## M4 — diagnostics, views, write-up ✅
+- Spectrum gate (spec 8.1): flat — 26.6% variance in top-3 non-trivial dims, so
+  the 3D volumetric view is **decoration**, built and labelled as such.
+- `figures/`: confusion.png (mean diagonal 0.38; confusions are STRUCTURED — D- and
+  I-families confuse internally, rare types smear = the effective-resolution
+  readout), triptych.png, null_histogram.png (observed objective 0.418 sits below
+  the ENTIRE strong-null distribution — objective-level result is unambiguous),
+  volumetric.html (labelled decoration), acoustic.html (form-vs-role contrast).
+- README.md: question, controls, headline table, figures, method, the two data
+  caveats, limitations, reproduce steps.
+
+## Status: M1–M4 complete.
+Verdict: combinatorial position re-identifies coda type above the frequency
+baseline (random +0.14, by_unit +0.14, both CIs clear of 0); objective sits below
+the strong null; recovery is data-limited (power curve monotonic). Cross-clan
+feasibility is cautiously supported — the one collapse (by_individual) is a
+power artefact of the 41%-attributed subset, not evidence against structure.

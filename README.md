@@ -83,6 +83,7 @@ superseded by the re-audit.
   all reliably positive, even with repeats removed. `predictive_info.py` →
   `results/predictive_info.csv`.
 - `10_clan_cross_prediction.png` / `11_clan_procrustes.png` — **cross-clan grammar
+- `12_expressive_features.png` — **additive check:** do ornament/rubato add predictive info on top of (rhythm,tempo)? Barely — only rubato's own weak self-structure. `expressive.py` → `results/expressive.csv`.
   comparison** (the right use of alignment): one clan's sequence model predicts
   another clan's next coda *worse than that clan's own base rates* (negative
   transfer), and clan transition-geometries are all distinct. Grammars are

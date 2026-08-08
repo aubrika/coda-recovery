@@ -153,6 +153,25 @@ better, and the (rhythm,tempo) grid is actually a *finer* partition (a single ty
 like `1+1+3` spans several tempo cells), so it asks a harder question, not a lossy
 one (`compare_codifications.py`).
 
+## An additive check: do ornament and rubato add anything? — barely
+
+The paper layers two *expressive* features on top of rhythm and tempo: **ornament**
+(an occasional extra click) and **rubato** (smooth duration drift across a run). We
+kept rhythm+tempo as the "classical coda type" analysis above and asked, as a
+*separate, additive* question, whether these two carry extra predictive information.
+
+They add almost nothing to predicting the **next call's identity**: on top of
+rhythm+tempo, ornament contributes a negligible **+0.01 bits** and rubato actually
+**hurts** (−0.31 — it splinters the predictor without adding signal). So the
+classical (rhythm,tempo) description already captures the identity-predictive part
+of the sequencing. The features do have a little structure of their *own*: the next
+call's ornament is **not** predictable from the current call (−0.01), but its
+**rubato direction is** (+0.13 bits) — the duration drift is sustained across a run,
+exactly as the paper reports. (Figure `12_expressive_features.png`; `python -m
+coda_recovery.expressive`. Caveat: ornament and rubato are *context* features
+defined via neighbours, so even these small numbers are partly neighbourhood-
+encoding, not purely new structure.)
+
 ## What it means
 
 Mostly, a coda's identity lives in **how it sounds** and **how often it's used**.

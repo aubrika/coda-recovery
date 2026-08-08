@@ -395,6 +395,44 @@ def fig_predictive_info():
     plt.close(fig)
 
 
+def fig_expressive():
+    """Additive: do ornament/rubato add anything on top of (rhythm,tempo)? Barely."""
+    d = pd.read_csv(RES / "expressive.csv")
+    add = d[d.experiment == "predict_next_RT"]
+    items = []
+    for pred, lab in [("ornament", "Ornament → next call's identity"),
+                      ("rubato", "Rubato → next call's identity"),
+                      ("ornament_+_rubato", "Both → next call's identity")]:
+        r = add[add.predictor == pred].iloc[0]
+        items.append((lab, float(r["gain"]), float(r["gain_lo"]), float(r["gain_hi"])))
+    for exp, lab in [("predict_next_ornament", "Is the next call's ornament predictable?"),
+                     ("predict_next_rubato", "Is the next call's rubato predictable?")]:
+        r = d[(d.experiment == exp) & (d.predictor == "RT")].iloc[0]
+        items.append((lab, float(r["mi"]), float(r["mi_lo"]), float(r["mi_hi"])))
+    labels, val, lo, hi = zip(*[(a, b, c, e) for a, b, c, e in items])
+    y = np.arange(len(items))[::-1]
+    fig, ax = plt.subplots(figsize=(9, 4.6))
+    ax.axvline(0, color="#444", lw=1.2)
+    for yi, v, l, h in zip(y, val, lo, hi):
+        meaningful = l > 0.02
+        c = BLUE if meaningful else GREY
+        ax.plot([l, h], [yi, yi], color=c, lw=3, solid_capstyle="round")
+        ax.plot(v, yi, "o", color=c, ms=9)
+        ax.annotate(f"{v:+.2f}", (v, yi), xytext=(0, 8), textcoords="offset points",
+                    ha="center", fontsize=9, color=INK)
+    ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=10.5)
+    ax.set_xlabel("Extra predictive information (bits per coda)")
+    ax.set_xlim(-0.45, 0.35)
+    _dress(ax); ax.yaxis.grid(False); ax.xaxis.grid(True, color="#eeeeee")
+    _titles(ax, "Do the 'expressive' features (ornament, rubato) add anything? — barely",
+            "On top of rhythm+tempo. Blue = a real positive contribution; grey = negligible or "
+            "negative. Only rubato's own weak self-structure stands out.")
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "12_expressive_features.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
@@ -406,6 +444,7 @@ def main():
     fig_factored(); print("plain/7_which_axis.png")
     fig_clan_axis_grid(); print("plain/8_clan_axis_grid.png")
     fig_predictive_info(); print("plain/9_predictive_information.png")
+    fig_expressive(); print("plain/12_expressive_features.png")
 
 
 if __name__ == "__main__":

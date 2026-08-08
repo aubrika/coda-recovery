@@ -46,7 +46,19 @@ finding, not a failure (see the confusion matrix).
 - **Gap sweep**: the CodaNumber-gap parameter ∈ {1,2,3,5} does not move the result
   (`results/gap_sweep.csv`) — it is not manufactured by that knob.
 
-## Figures (`figures/`)
+## Figures
+
+**For a general reader (`figures/plain/`)** — plain language, no jargon, one
+consistent color language (blue = using the sequence patterns, orange = guessing
+by how common each call is, grey dashed = pure luck):
+- `1_main_result.png` — patterns beat guessing across four increasingly strict
+  tests, counted as "call types correctly identified out of 21."
+- `2_more_data_helps.png` — the power curve: more calls analyzed → better
+  identification; guessing barely moves.
+- `3_easy_vs_hard_calls.png` — per-call reliability (replaces the confusion
+  heatmap): which of the 21 calls are reliably identified vs. easily confused.
+
+**Technical / methods (`figures/`)** — jargon retained for a specialist reader:
 
 - `ladder.png` — accuracy across the four splits, baseline + null as references.
 - `token_budget.png` — power curve: QAP rises 0.18→0.59 as pairs go 200→3.6k and

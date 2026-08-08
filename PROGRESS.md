@@ -179,3 +179,30 @@ the "regression"; the difference was pooled/between-whale vs single-whale. The
 (rhythm,tempo) grid is also a FINER partition than the 21 types (types split across
 tempo cells), so cell re-identification is a harder question, not a lossy one.
 Reinforces T_between (between-whale exchange) as the untested lead.
+
+## Phase 3: exchange test + a fragility that reframes the arc (exchange.py)
+Built within-whale / between-whale / pooled transitions on Dataset 2 (real
+timestamps + speaker IDs) for all four tokenizations. Two results:
+
+1. BETWEEN-whale exchange does NOT rescue recovery: legacy +0.045 (weak, ~1/cell,
+   underpowered), joint/rhythm/tempo between negative or ns. The "structure lives
+   in the exchange" hypothesis is not confirmed by this test.
+
+2. SHUFFLE-SCALE SENSITIVITY (the important one): the tempo result FLIPS SIGN with
+   the null's scale. Shuffling within short ~10-coda exchanges (preserves tempo
+   persistence) -> tempo +0.16 (survives). Shuffling within the whole recording
+   (randomize to frequency) -> tempo -0.19 to -0.37 (real loses to the frequency
+   null). So the tempo/rubato re-identification finding was NOT robust — it relied
+   on a persistence-preserving null.
+
+Underlying cause: codas are so dominated by self-repetition and matching (heavy
+matrix diagonals) that QAP recovery accuracy is unreliable — it can score the
+frequency-clean shuffle ABOVE the real diagonal-heavy data. This confounds every
+"recovery" number when persistence dominates (partially addressed earlier by the
+off-diagonal/syntax cut, but the sensitivity is deeper than that).
+
+HONEST STANDING CONCLUSION: prediction of the next coda is easy (repetition +
+base rates); RE-IDENTIFICATION of coda identity from sequence position, beyond
+frequency, is weak and methodologically fragile — under the strictest nulls it
+largely does not survive, within OR between whales. The earlier positive numbers
+depended on looser nulls and speaker-pooled data. `results/exchange.csv`.

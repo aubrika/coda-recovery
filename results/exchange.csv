@@ -1,0 +1,13 @@
+token,mode,k,pairs,trans_per_cell,real,shuffled,paired_diff,diff_lo,diff_hi,survives
+legacy,within,15,2721,6.0,0.659,0.464,0.195,0.091,0.291,True
+legacy,between,15,441,1.0,0.328,0.283,0.045,0.003,0.088,True
+legacy,pooled,15,507,1.1,0.363,0.336,0.027,-0.035,0.091,False
+joint,within,15,2521,5.6,0.373,0.592,-0.219,-0.352,-0.075,False
+joint,between,15,404,0.9,0.277,0.304,-0.027,-0.101,0.056,False
+joint,pooled,15,457,1.0,0.349,0.333,0.016,-0.053,0.083,False
+rhythm,within,10,2734,13.7,0.696,0.74,-0.044,-0.136,0.048,False
+rhythm,between,10,452,2.3,0.376,0.456,-0.08,-0.152,-0.004,False
+rhythm,pooled,10,517,2.6,0.428,0.44,-0.012,-0.076,0.052,False
+tempo,within,5,2859,57.2,0.776,0.968,-0.192,-0.32,-0.064,False
+tempo,between,5,480,9.6,0.376,0.744,-0.368,-0.536,-0.192,False
+tempo,pooled,5,559,11.2,0.36,0.736,-0.376,-0.536,-0.208,False

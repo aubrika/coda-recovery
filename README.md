@@ -66,6 +66,10 @@ superseded by the re-audit.
   identifiable from sequence order alone, with 95% CI; blue = clears zero.
 - `5_real_vs_scrambled.png` — real order vs the order-scrambled control per clan;
   where the bars nearly tie, order adds nothing.
+- `6_repetition_vs_syntax.png` — **the syntax cut.** Per clan, the full effect
+  (with self-repetition) vs genuine syntax (self-repetition removed): EC1's signal
+  jumps once repetition is removed (it was *hiding* the syntax), Pacific PO's
+  collapses (it *was* repetition). Data: `syntax.py` → `results/syntax.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

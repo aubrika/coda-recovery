@@ -14,6 +14,9 @@ Run:  python -m coda_recovery.syntax
 """
 from __future__ import annotations
 
+import csv
+from pathlib import Path
+
 import numpy as np
 
 from .run_reaudit import (
@@ -22,6 +25,8 @@ from .run_reaudit import (
 from .transitions import row_normalise
 from .recover import qap_recover, accuracy_at_1
 
+REPO = Path(__file__).resolve().parents[2]
+OUT = REPO / "results" / "syntax.csv"
 K = 15
 NREP = 30
 
@@ -61,16 +66,23 @@ def main():
     dss = [ec1_dataset()] + pacific_datasets()
     print(f"Syntax vs persistence — paired real-vs-shuffled, K={K}, {NREP} reps\n")
     print(f"{'clan':<12}{'FULL (with self-repeats)':>30}{'OFF-DIAGONAL (syntax only)':>32}")
+    rows = []
     for ds in dss:
         d0, l0, h0 = paired(ds, off_diagonal=False)
         d1, l1, h1 = paired(ds, off_diagonal=True)
-        tag0 = "syntax+persist" if l0 > 0 else "—"
-        tag1 = "SYNTAX" if l1 > 0 else "persistence-only" if d0 > 0 and l0 > 0 else "—"
+        rows.append({"clan": ds.name,
+                     "full_diff": round(d0, 4), "full_lo": round(l0, 4), "full_hi": round(h0, 4),
+                     "syntax_diff": round(d1, 4), "syntax_lo": round(l1, 4), "syntax_hi": round(h1, 4)})
         print(f"{ds.name:<12}"
               + f"{d0:+.3f} [{l0:+.3f},{h0:+.3f}]".rjust(26) + f"{('✓' if l0>0 else ''):>4}"
               + f"{d1:+.3f} [{l1:+.3f},{h1:+.3f}]".rjust(26) + f"{('✓' if l1>0 else ''):>6}")
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    with OUT.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader(); w.writerows(rows)
     print("\nOFF-DIAGONAL clears zero  -> genuine coda-A→different-coda-B syntax.")
     print("FULL clears but OFF-DIAGONAL does not -> the signal was self-repetition.")
+    print(f"\nwrote {OUT}")
 
 
 if __name__ == "__main__":

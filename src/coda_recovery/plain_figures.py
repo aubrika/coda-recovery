@@ -219,6 +219,63 @@ def fig_real_vs_shuffled():
     plt.close(fig)
 
 
+DARKBLUE, LTBLUE = "#16445f", "#79b0d6"
+
+
+def fig_syntax_vs_repetition():
+    """Companion to the forest plot: for each clan, BOTH the full effect (incl.
+    self-repetition) and the syntax-only effect (self-repetition removed), so the
+    reader sees where repetition hides real syntax (EC1) and where an apparent
+    signal was only repetition (PO). Reads results/syntax.csv."""
+    d = pd.read_csv(RES / "syntax.csv").copy()
+    for c in ["full_diff", "full_lo", "full_hi", "syntax_diff", "syntax_lo", "syntax_hi"]:
+        d[c] = d[c] * N_TYPES_R
+    d = d.sort_values("syntax_diff")
+    y = np.arange(len(d))
+
+    fig, ax = plt.subplots(figsize=(9.5, 6.2))
+    ax.axvline(0, color="#444", lw=1.2)
+    for yi, (_, r) in zip(y, d.iterrows()):
+        # connector showing the shift from 'with repetition' to 'syntax only'
+        ax.plot([r.full_diff, r.syntax_diff], [yi, yi], color="#cccccc", lw=1.5, zorder=1)
+        ax.plot([r.full_lo, r.full_hi], [yi, yi], color=LTBLUE, lw=2.5, zorder=2)
+        ax.plot(r.full_diff, yi, "s", color=LTBLUE, ms=9, zorder=3)
+        ax.plot([r.syntax_lo, r.syntax_hi], [yi, yi], color=DARKBLUE, lw=2.5, zorder=2)
+        ax.plot(r.syntax_diff, yi, "o", color=DARKBLUE, ms=10, zorder=3)
+    ax.set_yticks(y); ax.set_yticklabels([CLAN_LABEL.get(c, c) for c in d.clan], fontsize=11)
+    ax.set_xlabel("Extra calls identified from order (out of 15)")
+    _dress(ax); ax.yaxis.grid(False); ax.xaxis.grid(True, color="#eeeeee")
+    _titles(ax, "Repetition vs real syntax: where the sequencing signal actually is",
+            "For each clan: all order incl. whales repeating a coda (light square) vs genuine "
+            "syntax with self-repetition removed (dark circle). Right of zero = order helps.")
+    ax.set_xlim(-2.5, 9.5)
+    # callouts for the two instructive clans, placed clear of subtitle/legend
+    labs = list(d.clan)
+    if "EC1(Gero)" in labs:
+        yi = labs.index("EC1(Gero)")
+        ax.annotate("repetition was\nhiding the syntax",
+                    (d[d.clan == "EC1(Gero)"].syntax_diff.iloc[0], yi),
+                    xytext=(-14, -26), textcoords="offset points", ha="right", va="top",
+                    fontsize=9, color=MUTED, arrowprops=dict(arrowstyle="->", color=MUTED))
+    if "PAC:PO" in labs:
+        yi = labs.index("PAC:PO")
+        ax.annotate("looked like a signal,\nbut was only repetition",
+                    (d[d.clan == "PAC:PO"].syntax_diff.iloc[0], yi),
+                    xytext=(55, 14), textcoords="offset points", ha="left", va="bottom",
+                    fontsize=9, color=MUTED, arrowprops=dict(arrowstyle="->", color=MUTED))
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([0], [0], marker="s", color="w", markerfacecolor=LTBLUE,
+                              markersize=10, label="All order (includes self-repetition)"),
+                       Line2D([0], [0], marker="o", color="w", markerfacecolor=DARKBLUE,
+                              markersize=10, label="Genuine syntax (self-repetition removed)")],
+              loc="center left", bbox_to_anchor=(0.45, 0.42), frameon=True,
+              facecolor="white", edgecolor="none", fontsize=10)
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "6_repetition_vs_syntax.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
@@ -226,6 +283,7 @@ def main():
     fig_easy_hard(df, types); print("plain/3_easy_vs_hard_calls.png")
     fig_order_forest(); print("plain/4_does_order_help.png")
     fig_real_vs_shuffled(); print("plain/5_real_vs_scrambled.png")
+    fig_syntax_vs_repetition(); print("plain/6_repetition_vs_syntax.png")
 
 
 if __name__ == "__main__":

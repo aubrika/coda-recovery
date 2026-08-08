@@ -135,7 +135,33 @@ transition question is genuinely NOVEL (nearest: "Rhythm of the Deep" arXiv
 2003 cross-clan but repertoire-only) — but novelty is worth nothing until the
 strict re-audit says a signal survives.
 
-## Status: M1–M4 + Phase 2 done; Phase-2 claim under strict-null re-audit.
+## Phase 2c — unified strict-null re-audit: what survives ✅
+One protocol for EC1 + 7 Pacific clans (`run_reaudit.py`, `results/reaudit.csv`):
+top-15 types, DISJOINT-SESSION split (independent samples, no leakage), PAIRED
+real-vs-shuffled test (shuffle = permute type labels within each session; the
+paired difference isolates the sequential contribution beyond frequency).
+Survival criterion: paired (real − shuffled) bootstrap CI excludes 0.
+
+| clan | real | shuffled | real−shuffled (95% CI) | survives |
+|---|---|---|---|---|
+| **EC1 (Gero)** | 0.39 | 0.29 | **+0.093 [+0.018, +0.164]** | **YES** |
+| PAC:REG | 0.38 | 0.30 | +0.080 [-0.011, +0.167] | no |
+| PAC:SH | 0.17 | 0.20 | -0.031 [-0.102, +0.033] | no |
+| PAC:FP | 0.07 | 0.08 | -0.016 | no |
+| PAC:PALI | 0.20 | 0.20 | +0.004 | no |
+| **PAC:PO** | 0.32 | 0.22 | **+0.107 [+0.060, +0.158]** | **YES** |
+| PAC:RI | 0.23 | 0.18 | +0.047 [-0.002, +0.098] | no |
+| **PAC:SI** | 0.49 | 0.26 | **+0.227 [+0.160, +0.300]** | **YES** |
+
+**Final verdict: 3/8 clans (incl. the original EC1) show a SMALL but reliable
+within-clan sequential signal beyond frequency.** The original EC1 finding
+SURVIVES — but at +0.093 (~1.4 of 15 types), far below the inflated headline. The
+effect is heterogeneous and not density-driven (SI: 1.9 t/cell, strongest;
+SH: 5.1 t/cell, none). Cross-clan alignment fails throughout. Earlier large
+positives were inflated by the lenient rank baseline + shared-sample splits;
+under the strict paired null, only a modest signal remains, in some clans.
+
+## Status: complete through strict re-audit. Honest final picture recorded.
 Verdict: combinatorial position re-identifies coda type above the frequency
 baseline (random +0.14, by_unit +0.14, both CIs clear of 0); objective sits below
 the strong null; recovery is data-limited (power curve monotonic). Cross-clan

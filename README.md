@@ -10,29 +10,42 @@ best aligns the two graphs. Because both halves come from the same clan (EC-1),
 the correct answer is known: the identity. The measurand is how much of it we
 recover — the **effective structural resolution** of the coda system.
 
-## Headline
+> **Plain-language summary: [`SUMMARY.md`](SUMMARY.md).**
 
-On the Eastern Caribbean clan (Gero et al. 2016), 21 coda types, ~3.9k codas:
+## Headline (after a strict re-audit)
 
-| split (halves share…) | QAP acc@1 | frequency baseline | **QAP − baseline (95% CI)** | strong null |
+The decisive test is the **paired real-vs-shuffled** comparison under a strict
+null (`run_reaudit.py`): split each clan's recordings into disjoint-session
+halves, top-15 types, and compare recovery on the **real** order against the
+**same codas with order scrambled within each session** (frequencies preserved,
+only sequence destroyed). The difference isolates what *order* contributes beyond
+frequency. A clan's signal survives iff that paired difference's 95% CI clears 0.
+
+| clan | real | shuffled | **real − shuffled (95% CI), of 15 types** | survives |
 |---|---|---|---|---|
-| random *(everything)* | 0.40 | 0.26 | **+0.143 [+0.03, +0.25]** | 0.20 |
-| by date | 0.30 | 0.19 | **+0.110 [+0.02, +0.20]** | 0.06 |
-| by individual | 0.14 | 0.13 | +0.017 **[−0.03, +0.07]** | 0.19 |
-| by social unit | 0.23 | 0.10 | **+0.136 [+0.06, +0.21]** | 0.17 |
+| **Caribbean EC1 (Gero)** | 0.39 | 0.29 | **+1.4 [+0.3, +2.5]** | **yes** |
+| Pacific PO | 0.32 | 0.22 | **+1.6 [+0.9, +2.4]** | **yes** |
+| Pacific SI | 0.49 | 0.26 | **+3.4 [+2.4, +4.5]** | **yes** |
+| Pacific REG | 0.38 | 0.30 | +1.2 [−0.2, +2.5] | no |
+| Pacific RI | 0.23 | 0.18 | +0.7 [0.0, +1.5] | no |
+| Pacific SH / FP / PALI | — | — | ≈ 0 | no |
 
-**Combinatorial position carries type identity beyond frequency**, and the signal
-**survives to the by-unit split** — the closest analogue here to the cross-clan
-case (the two halves share no social units). The lone collapse, by-individual, is
-confounded with sample size: it is the only rung restricted to the 41%
-speaker-attributed subset, running at **1.6 transitions/cell** vs 4.1 elsewhere.
-So the collapse reads as *lack of power*, not *absence of structure*.
+**A small but real within-clan sequential signal — about 1–3 of 15 types beyond
+frequency — survives in 3 of 8 clans (including the original EC1), is marginal in
+2, and absent in 3.** It is not driven by sample size (SI has the least data, the
+largest effect). **Cross-clan alignment fails throughout** (`run_crossclan.py`):
+the sequencing that helps within a clan does not transfer to another clan.
 
-At the **objective** level the result is unambiguous even where accuracy is noisy:
-the recovered `‖P·T_A·Pᵀ − T_B‖_F` sits **below the entire strong-null
-distribution** (`figures/null_histogram.png`). Accuracy@1 is harsher than the
-objective because many types genuinely share a structural position — which is the
-finding, not a failure (see the confusion matrix).
+### What this corrects
+Earlier versions of this README reported much larger effects (e.g. EC1 "+0.14
+over frequency", Pacific within-clan "0.61"). Those were **inflated** by two
+things the re-audit fixed: (1) grading against the frequency-**rank** baseline,
+which is too lenient — QAP exploits more marginal structure than rank-matching, so
+the **shuffle null** is the true bar; and (2) split-halves that shared sequences.
+Under the strict paired null on independent samples, only the modest signal above
+remains. The exploratory ladder/figures (`figures/plain/1–3`, `figures/*.png`)
+use the lenient baseline and **overstate** the effect — kept for the record, but
+superseded by the re-audit.
 
 ## The controls (this is where a spurious result would come from)
 
@@ -48,15 +61,15 @@ finding, not a failure (see the confusion matrix).
 
 ## Figures
 
-**For a general reader (`figures/plain/`)** — plain language, no jargon, one
-consistent color language (blue = using the sequence patterns, orange = guessing
-by how common each call is, grey dashed = pure luck):
-- `1_main_result.png` — patterns beat guessing across four increasingly strict
-  tests, counted as "call types correctly identified out of 21."
-- `2_more_data_helps.png` — the power curve: more calls analyzed → better
-  identification; guessing barely moves.
-- `3_easy_vs_hard_calls.png` — per-call reliability (replaces the confusion
-  heatmap): which of the 21 calls are reliably identified vs. easily confused.
+**The honest result (`figures/plain/`)** — plain language, colorblind-safe:
+- `4_does_order_help.png` — **the headline.** Per clan, extra calls (of 15)
+  identifiable from sequence order alone, with 95% CI; blue = clears zero.
+- `5_real_vs_scrambled.png` — real order vs the order-scrambled control per clan;
+  where the bars nearly tie, order adds nothing.
+
+**Exploratory, lenient-baseline (superseded — overstate the effect):**
+- `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the
+  EC1 ladder graded against the frequency-rank baseline. Kept for the record.
 
 **Technical / methods (`figures/`)** — jargon retained for a specialist reader:
 

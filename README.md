@@ -82,6 +82,11 @@ superseded by the re-audit.
   Cross-validated bits the current (rhythm,tempo) token carries about the next —
   all reliably positive, even with repeats removed. `predictive_info.py` →
   `results/predictive_info.csv`.
+- `10_clan_cross_prediction.png` / `11_clan_procrustes.png` — **cross-clan grammar
+  comparison** (the right use of alignment): one clan's sequence model predicts
+  another clan's next coda *worse than that clan's own base rates* (negative
+  transfer), and clan transition-geometries are all distinct. Grammars are
+  clan-specific. `clan_similarity.py` → `results/clan_similarity.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

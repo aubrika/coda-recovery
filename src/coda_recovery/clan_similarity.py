@@ -1,0 +1,193 @@
+"""How similar are clans' sequencing 'grammars'? Two measures over a shared global
+(rhythm, tempo) token space (rhythm = nearest EC1 template; tempo = EC1 duration
+bins — so tokens mean the same thing across clans).
+
+1. CROSS-PREDICTION (interpretable, MI-native): train the bigram P(next|current)
+   on clan A, and score clan B's held-out codas against B's OWN frequency baseline.
+   transfer[A→B] (bits/coda) = how much A's grammar predicts B beyond B's base
+   rates. Diagonal = within-clan predictive information. Off-diagonal > 0 = shared
+   grammar. Asymmetry is informative.
+
+2. PROCRUSTES on PMI embeddings (the MUSE version): embed each clan's shared tokens
+   via SVD of its pointwise-mutual-information matrix, orthogonally align two clans
+   (tokens correspond, since the scheme is global), and read the residual as a
+   rotation-invariant structural DISTANCE. Small = similar geometry of associations.
+
+Run:  python -m coda_recovery.clan_similarity
+"""
+from __future__ import annotations
+
+import csv
+from collections import Counter, defaultdict
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.linalg import orthogonal_procrustes
+
+from .coda_model import load as load_ec1, TEMPO_EDGES
+from .predictive_info import single_whale_sequences, ALPHA
+from .factored_by_clan import assign_rhythm, load_templates
+from .hersh import load_hersh, CLANS
+
+REPO = Path(__file__).resolve().parents[2]
+FIG = REPO / "figures" / "plain"
+OUT = REPO / "results"
+CLAN_ORDER = ["EC1"] + CLANS
+NREP = 15
+EMB_K, EMB_D = 15, 5
+
+
+def get_pairs():
+    """clan -> list of (cv_unit, (rhythm,tempo), (rhythm,tempo)) over global tokens."""
+    pairs = {}
+    codas = load_ec1()
+    pairs["EC1"] = [(dep, (a.rhythm, a.tempo), (b.rhythm, b.tempo))
+                    for dep, seq in single_whale_sequences(codas)
+                    for a, b in zip(seq, seq[1:])]
+    templates = load_templates()
+    h = load_hersh()
+    for c in CLANS:
+        sub = h[h.clan_name == c].copy()
+        sub["rhythm"] = assign_rhythm(sub, templates)
+        sub["tempo"] = np.digitize(sub["duration"].to_numpy(), TEMPO_EDGES)  # GLOBAL tempo
+        sub = sub[sub["rhythm"] >= 0]
+        pr = []
+        for grp, g in sub.sort_values(["grpvar", "coda_number"]).groupby("grpvar"):
+            rows = list(g.itertuples())
+            for a, b in zip(rows, rows[1:]):
+                if b.coda_number - a.coda_number <= 1:
+                    pr.append((grp, (a.rhythm, a.tempo), (b.rhythm, b.tempo)))
+        pairs[c] = pr
+    return pairs
+
+
+def cross_prediction(pairs):
+    clans = CLAN_ORDER
+    vocab = set()
+    for pr in pairs.values():
+        for _, a, b in pr:
+            vocab |= {a, b}
+    V = len(vocab)
+    acc = defaultdict(list)
+    for rep in range(NREP):
+        rng = np.random.default_rng(rep)
+        train, test = {}, {}
+        for c in clans:
+            units = sorted({u for u, _, _ in pairs[c]}, key=str)
+            u = np.array(units, dtype=object); rng.shuffle(u)
+            te = set(u[:max(1, len(u) // 3)])
+            train[c] = [p for p in pairs[c] if p[0] not in te]
+            test[c] = [p for p in pairs[c] if p[0] in te]
+        bi, rowsum, uni, Nu = {}, {}, {}, {}
+        for c in clans:
+            b = defaultdict(Counter); rs = Counter(); un = Counter()
+            for _, x, y in train[c]:
+                b[x][y] += 1; rs[x] += 1; un[y] += 1
+            bi[c], rowsum[c], uni[c], Nu[c] = b, rs, un, sum(un.values())
+        for i, A in enumerate(clans):
+            for j, B in enumerate(clans):
+                g = []
+                for _, x, y in test[B]:
+                    p_uni = (uni[B][y] + ALPHA) / (Nu[B] + ALPHA * V)
+                    p_bi = (bi[A][x][y] + ALPHA) / (rowsum[A].get(x, 0) + ALPHA * V)
+                    g.append(np.log2(p_bi) - np.log2(p_uni))
+                acc[(i, j)].append(np.mean(g) if g else np.nan)
+    n = len(clans)
+    return np.array([[np.nanmean(acc[(i, j)]) for j in range(n)] for i in range(n)])
+
+
+def procrustes_distances(pairs):
+    cnt = Counter()
+    for pr in pairs.values():
+        for _, a, b in pr:
+            cnt[a] += 1; cnt[b] += 1
+    index = [t for t, _ in cnt.most_common(EMB_K)]
+    idx = {t: i for i, t in enumerate(index)}
+    emb = {}
+    for c, pr in pairs.items():
+        C = np.full((EMB_K, EMB_K), 0.5)
+        for _, a, b in pr:
+            if a in idx and b in idx:
+                C[idx[a], idx[b]] += 1
+        P = C / C.sum()
+        pi = P.sum(1, keepdims=True); pj = P.sum(0, keepdims=True)
+        PMI = np.log(P / (pi * pj))
+        U, S, _ = np.linalg.svd(PMI)
+        emb[c] = U[:, :EMB_D] * np.sqrt(S[:EMB_D])
+    clans = CLAN_ORDER
+    D = np.zeros((len(clans), len(clans)))
+    for i, A in enumerate(clans):
+        for j, B in enumerate(clans):
+            R, _ = orthogonal_procrustes(emb[A], emb[B])
+            D[i, j] = np.linalg.norm(emb[A] @ R - emb[B]) / np.linalg.norm(emb[B])
+    return D
+
+
+def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", invert_good=False):
+    clans = CLAN_ORDER
+    fig, ax = plt.subplots(figsize=(7.6, 6.6))
+    im = ax.imshow(M, cmap=cmap)
+    ax.set_xticks(range(len(clans))); ax.set_xticklabels(clans, fontsize=10)
+    ax.set_yticks(range(len(clans))); ax.set_yticklabels(clans, fontsize=10)
+    ax.set_xlabel("predicted clan (B)"); ax.set_ylabel("model clan (A)")
+    lo, hi = np.nanmin(M), np.nanmax(M)
+    for i in range(len(clans)):
+        for j in range(len(clans)):
+            v = M[i, j]
+            dark_cell = v > lo + (hi - lo) * 0.55   # high value = dark in both cmaps
+            ax.text(j, i, fmt.format(v), ha="center", va="center", fontsize=8,
+                    color="white" if dark_cell else "#222")
+    ax.set_title(title, loc="left", fontweight="bold", pad=24, color="#222")
+    ax.annotate(sub, xy=(0, 1), xytext=(0, 8), xycoords="axes fraction",
+                textcoords="offset points", fontsize=10, color="#666")
+    fig.colorbar(im, fraction=0.046, pad=0.04)
+    fig.tight_layout(); FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / fname, dpi=150, bbox_inches="tight"); plt.close(fig)
+
+
+def main():
+    pairs = get_pairs()
+    print("clan pairs:", {c: len(p) for c, p in pairs.items()})
+
+    T = cross_prediction(pairs)
+    print("\nCROSS-PREDICTION transfer[A->B] (bits/coda; diagonal = within-clan MI):")
+    print("        " + "".join(f"{c:>7}" for c in CLAN_ORDER))
+    for i, A in enumerate(CLAN_ORDER):
+        print(f"{A:>7} " + "".join(f"{T[i, j]:>7.2f}" for j in range(len(CLAN_ORDER))))
+
+    D = procrustes_distances(pairs)
+    print("\nPROCRUSTES distance between clan token-embeddings (0 = identical geometry):")
+    print("        " + "".join(f"{c:>7}" for c in CLAN_ORDER))
+    for i, A in enumerate(CLAN_ORDER):
+        print(f"{A:>7} " + "".join(f"{D[i, j]:>7.2f}" for j in range(len(CLAN_ORDER))))
+
+    # off-diagonal transfer as a fraction of the target clan's own within-clan MI
+    self_mi = np.diag(T)
+    off = T.copy(); np.fill_diagonal(off, np.nan)
+    print(f"\nmean within-clan MI (diagonal): {self_mi.mean():.2f} bits")
+    print(f"mean cross-clan transfer (off-diagonal): {np.nanmean(off):.2f} bits "
+          f"({100*np.nanmean(off)/self_mi.mean():.0f}% of within-clan)")
+
+    OUT.mkdir(exist_ok=True)
+    with (OUT / "clan_similarity.csv").open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["measure", "A"] + CLAN_ORDER)
+        for i, A in enumerate(CLAN_ORDER):
+            w.writerow(["cross_prediction_bits", A] + [round(T[i, j], 4) for j in range(len(CLAN_ORDER))])
+        for i, A in enumerate(CLAN_ORDER):
+            w.writerow(["procrustes_distance", A] + [round(D[i, j], 4) for j in range(len(CLAN_ORDER))])
+
+    _heatmap(T, "Does one clan's grammar predict another's next coda?",
+             "transfer[A→B] in bits/coda beyond B's own frequencies. Diagonal = within-clan. "
+             "Warm = shared sequencing.", "10_clan_cross_prediction.png", "YlOrRd")
+    _heatmap(D, "Geometry of clan grammars (Procrustes distance)",
+             "distance between clans' (rhythm,tempo) transition embeddings after best alignment "
+             "(0 = identical).", "11_clan_procrustes.png", "viridis_r", fmt="{:.2f}", invert_good=True)
+    print("\nwrote results/clan_similarity.csv, figures plain/10 & plain/11")
+
+
+if __name__ == "__main__":
+    main()

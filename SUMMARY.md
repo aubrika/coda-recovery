@@ -83,6 +83,29 @@ partner's** — the coda "matching" and duration-drift ("rubato") the paper
 describes. Rhythm and the full type carry little between-whale signal, but those
 tests are data-starved (~480 pairs), so treat their nulls cautiously.
 
+## Do clans share a sequencing "grammar"? — No
+
+With a robust measure in hand, we can finally ask the cross-clan question cleanly:
+is one clan's sequencing structure the *same* as another's? Two ways, both saying
+no. **Cross-prediction:** train the "what follows what" model on clan A and use it
+to predict clan B's next coda. For *every* pair of different clans, A's model
+predicts B **worse than B's own base rates** (negative transfer, −0.4 to −2.9 bits)
+— a clan's grammar doesn't just fail to carry over, it actively *mis*-predicts
+another clan. **Procrustes** (aligning the clans' transition-geometries as
+directly as possible) agrees: all clan pairs are far apart. The Caribbean clan is
+the biggest outlier from the Pacific clans, as you'd expect for the most separated
+population. (Figures `10_clan_cross_prediction.png`, `11_clan_procrustes.png`;
+`python -m coda_recovery.clan_similarity`.)
+
+So the picture is consistent and, in hindsight, tidy: **the *what* is partly
+shared** (clans draw on overlapping coda inventories) but **the *how* — the order
+they string codas in — is clan-specific.** Sequencing is a cultural, clan-level
+property. (Caveat: cross-prediction blends two kinds of difference — clans use
+different codas *and* order them differently; the Procrustes distance, computed on
+shared tokens, more specifically isolates the ordering geometry, and it too shows
+clans are distinct. The Caribbean-vs-Pacific gap is also partly a data-source
+difference — single-whale streams vs pooled repertoires.)
+
 ## Predicting the next call is not the same as identifying calls
 
 It is easy to conflate two very different questions:
@@ -160,6 +183,10 @@ not been asked before, so even this modest, careful answer is new ground.
 
 - `9_predictive_information.png` — **the headline.** Cross-validated bits the current
   coda carries about the next, per dial, with and without repeats. All positive.
+- `10_clan_cross_prediction.png` — clan×clan grammar transfer: within-clan positive,
+  every cross-clan pair negative. Grammars don't transfer.
+- `11_clan_procrustes.png` — geometry of clan grammars (Procrustes distance); all
+  clans distinct, Caribbean the outlier.
 - `1`–`3` — the original Caribbean-clan analysis (uses the earlier, lenient
   baseline; kept for the record, superseded by figure 9 and the MI sweep).
 - `4`–`8` — the QAP-era re-identification figures (per-clan, syntax, factored,

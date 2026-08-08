@@ -78,6 +78,10 @@ superseded by the re-audit.
   (8 clans × tempo/rhythm/joint). Tempo is most reproducible (4/8), but the
   biggest clan REG uses rhythm/joint. `factored_by_clan.py` →
   `results/factored_by_clan.csv`.
+- `9_predictive_information.png` — **the clean result (supersedes the QAP framing).**
+  Cross-validated bits the current (rhythm,tempo) token carries about the next —
+  all reliably positive, even with repeats removed. `predictive_info.py` →
+  `results/predictive_info.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

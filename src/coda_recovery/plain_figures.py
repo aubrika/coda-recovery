@@ -353,6 +353,48 @@ def fig_clan_axis_grid():
     plt.close(fig)
 
 
+def fig_predictive_info():
+    """The clean, robust result: held-out predictive information (bits/coda) that
+    the current (rhythm,tempo) token carries about the next — total and with
+    repeats removed. Replaces the QAP re-identification framing entirely."""
+    d = pd.read_csv(RES / "predictive_info.csv").set_index("mode")
+    order = ["tempo", "rhythm", "joint"]
+    labels = ["Tempo\n(duration)", "Rhythm\n(click pattern)", "Both\n(rhythm+tempo)"]
+    x = np.arange(len(order)); w = 0.38
+    tot = np.array([d.loc[m, "gain_bits"] for m in order])
+    tot_e = np.vstack([tot - [d.loc[m, "gain_lo"] for m in order],
+                       [d.loc[m, "gain_hi"] for m in order] - tot])
+    tr = np.array([d.loc[m, "gain_bits_nonself"] for m in order])
+    tr_e = np.vstack([tr - [d.loc[m, "nonself_lo"] for m in order],
+                      [d.loc[m, "nonself_hi"] for m in order] - tr])
+
+    fig, ax = plt.subplots(figsize=(7.6, 5.2))
+    ax.bar(x - w / 2, tot, w, yerr=tot_e, capsize=4, color=LTBLUE,
+           label="All transitions (includes repeats)")
+    ax.bar(x + w / 2, tr, w, yerr=tr_e, capsize=4, color=DARKBLUE,
+           label="Changes only (repeats removed)")
+    for xi, v, hi in zip(x - w / 2, tot, [d.loc[m, "gain_hi"] for m in order]):
+        ax.annotate(f"{v:.2f}", (xi, hi), xytext=(0, 4), textcoords="offset points",
+                    ha="center", fontsize=10, color=INK, fontweight="bold")
+    for xi, v, hi in zip(x + w / 2, tr, [d.loc[m, "nonself_hi"] for m in order]):
+        ax.annotate(f"{v:.2f}", (xi, hi), xytext=(0, 4), textcoords="offset points",
+                    ha="center", fontsize=10, color=INK, fontweight="bold")
+    ax.axhline(0, color="#444", lw=1)
+    ax.set_xlim(-0.6, 2.6)
+    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=11)
+    ax.set_ylabel("Predictive information (bits per coda)")
+    ax.set_ylim(0, 2.05)
+    _dress(ax)
+    _titles(ax, "The current coda genuinely predicts the next — beyond frequency",
+            "Cross-validated bits of information the current call carries about the next (higher = "
+            "more predictable). All bars are reliably above zero — even with repetition removed.")
+    ax.legend(loc="upper left", frameon=False, fontsize=10.5)
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "9_predictive_information.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
@@ -363,6 +405,7 @@ def main():
     fig_syntax_vs_repetition(); print("plain/6_repetition_vs_syntax.png")
     fig_factored(); print("plain/7_which_axis.png")
     fig_clan_axis_grid(); print("plain/8_clan_axis_grid.png")
+    fig_predictive_info(); print("plain/9_predictive_information.png")
 
 
 if __name__ == "__main__":

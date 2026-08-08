@@ -197,11 +197,15 @@ Then we asked a sharper question than before: **which dial carries the sequentia
 signal — the rhythm, or the timing?** We split each coda into its rhythm and its
 tempo and ran the same re-identification test on each.
 
-**The answer is timing, not pattern.** Only **tempo** shows a re-identifiable
-sequential signal (clears the shuffle bar); **rhythm** does not. In plain terms: a
-whale's *click pattern* doesn't sit in a detectable order, but its *durations
-drift in a structured way* across a run — which is exactly the **rubato** the
-paper describes. So the little sequential structure that exists is a matter of
+**The answer is timing, not pattern.** Only **tempo** shows a *re-identifiable*
+sequential signal (clears the shuffle bar); **rhythm** does not. This is *not* to
+say rhythm order is random — even when a whale *changes* rhythm, the current
+rhythm predicts the next one somewhat better than chance (see the next section).
+It is that rhythm's structure is too weak, and spread over too many (18) noisy
+categories, to let you *re-identify* which rhythm is which across recordings. Its
+durations, by contrast, *drift in a structured, directional way* across a run —
+exactly the **rubato** the paper describes — which is distinctive enough to
+re-identify. So the *identifiable* sequential structure is a matter of
 *timing/expression*, not of which drum-pattern comes next. (Figure
 `7_which_axis.png`. Reproducible: `python -m coda_recovery.recover_factored`.)
 
@@ -216,11 +220,13 @@ them plainly — especially because they give opposite-looking answers:
    alone?*
 
 **Prediction is easy here.** You can guess the next coda **75–85%** of the time.
-Even *rhythm alone* predicts the next coda **82%** of the time. Almost all of that,
-though, comes from two dull facts: whales **repeat** (the next coda is the same as
-the current one ~80% of the time), and a **few codas are very common** (one rhythm
-is 64% of all codas). Knowing the current coda does add real predictive power on
-top of the base rate — but mostly by telling you "expect a repeat."
+Even *rhythm alone* predicts the next coda **82%** of the time. A lot of that comes
+from two dull facts: whales **repeat** (the next coda is the same as the current
+one ~80% of the time), and a **few codas are very common** (one rhythm is 64% of
+all codas). But it is *not only* repetition: even when a whale actually **changes**
+coda, the current one still predicts where it goes better than chance — for rhythm,
+54% vs a 39% base rate (a real +15-point gain); for tempo, more (+26). So there is
+genuine "A tends to be followed by B" structure in every axis.
 
 **Identification is much harder, and mostly fails** — because the very thing that
 makes codas predictable (everyone repeats) is *identical for every coda*, so it
@@ -240,7 +246,12 @@ So, to answer the two natural questions directly:
   beyond frequency?* **Mostly no** for the click-pattern/rhythm and the full type
   on this dataset; **yes for tempo.** The data-model refactor did not remove
   predictability — it let us pinpoint that the *identifiable* sequential structure
-  lives specifically in **timing**. (Reproducible: `python -m
+  lives specifically in **timing**.
+- *Does using the full (rhythm, tempo) tuple make re-identification more reliable
+  than the axes separately?* **No — it makes it worse.** Combining dilutes the
+  clean tempo signal with the noisy rhythm one, and spreads the same ~2,800
+  transitions across 64 token types instead of 5 (≈1 per cell vs ~114) — far too
+  thin. **Tempo alone is the sweet spot.** (Reproducible: `python -m
   coda_recovery.predictability`.)
 
 ## What it means

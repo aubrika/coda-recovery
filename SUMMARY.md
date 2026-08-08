@@ -251,41 +251,23 @@ rhythm derived by nearest EC1 template, tempo by per-clan duration quantiles.
 Provenance and licences in `data/raw/PROVENANCE.md`; unlicensed raw data is
 fetched, not redistributed.
 
-### 2. Tokens and the firewall
-The identity token is the (rhythm, tempo) cell; we also test each axis alone. The
-recovery target (rhythm/tempo) and its acoustic correlates (duration, click count,
-raw intervals, legacy type) are **never** fed to any model as features — only token
-identities and their transitions. (This mattered more for the QAP recovery; the MI
-test is a plain sequence model over token identities.)
-
-### 3. The measure (primary): held-out predictive information
+### 2. The measure: held-out predictive information
+The identity token is the (rhythm, tempo) cell; we also test each axis alone.
 Consecutive token pairs come from single-whale call sequences (same speaker,
-onsets ≤ 8 s apart) for the within test, from turn-taking pairs (different speakers,
-next onset 0–2 s after the previous coda's termination) for the between test, and
-from within-repertoire order for the Pacific clans. For repeated random splits of
-the recordings (⅔ train, ⅓ test), we fit an add-α-smoothed bigram P(next|current)
-and unigram P(next) on train and score, on the held-out pairs,
-`mean( log2 P_bi(next|cur) − log2 P_uni(next) )` — the cross-validated MI in
-bits/coda. Bootstrap 95% CI over folds. The **transition-only** variant trains and
-tests on non-self pairs (a≠b), isolating "given a change, is the destination
-predictable beyond base rate" (training on non-self is essential — the full bigram
-spends its mass on the diagonal and would otherwise make any change look
-unpredictable, an artefact). Code: `predictive_info.py`, `predictive_info_sweep.py`.
+onsets ≤ 8 s apart) for the within test, turn-taking pairs (different speakers, next
+onset 0–2 s after the previous coda's end) for the between test, and within-group
+repertoire order for the Pacific clans. For repeated ⅔/⅓ splits of the recordings
+we fit an add-α-smoothed bigram P(next|current) and unigram P(next) on train and
+score, on held-out pairs, `mean( log2 P_bi(next|cur) − log2 P_uni(next) )` — the
+cross-validated MI in bits/coda, with a bootstrap 95% CI over folds. The
+**transition-only** variant trains and tests on non-self pairs (a≠b), isolating
+"given a change, is the destination predictable beyond base rate" — training on
+non-self is essential, or the full bigram's diagonal mass makes any change look
+unpredictable. Code: `predictive_info.py`, `predictive_info_sweep.py`.
 
-### 4. Why not QAP / re-identification
-QAP graph-matching (align two anonymised transition graphs by permutation, via
-scipy's FAQ + 2-opt, verified against brute force in the tests) was the original
-primary tool, for the *identification* framing (and as the MUSE analogue). On
-sperm-whale codas it fails for two reasons documented in `PROGRESS.md`: the
-transition matrices are diagonal-dominant (repetition/matching), which QAP-accuracy
-handles unreliably — it can rank a frequency-clean shuffle above the real data; and
-the paired shuffle null's scale (within-exchange vs within-recording) swings the
-result, including its sign. These are properties of the *metric*, not the data. The
-MI test avoids both. The QAP machinery and its figures are retained as the record.
-
-### 5. Controls and honesty
-No shuffle scale to choose (the unigram is the frequency baseline); cross-validation
-guards overfitting; results are reported with bootstrap CIs and with the persistence
-(repeat) component separated out. The project's error history — two null bugs, a
-flawed legacy-vs-factored cross-dataset comparison, and the QAP fragility itself —
-is recorded in `PROGRESS.md` rather than smoothed over.
+### 3. Controls and honesty
+No shuffle scale to choose (the unigram *is* the frequency baseline); cross-validation
+guards overfitting; results carry bootstrap CIs with the repeat component separated
+out. The retired QAP re-identification arm, the two null bugs, and a flawed
+legacy-vs-factored comparison a reviewer caught are all recorded in `PROGRESS.md`
+rather than smoothed over.

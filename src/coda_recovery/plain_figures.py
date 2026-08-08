@@ -151,11 +151,47 @@ def fig_easy_hard(df, types):
     plt.close(fig)
 
 
+def fig_crossclan():
+    """Phase-2 headline: identifiable within a clan, not across clans."""
+    within = pd.read_csv(RES / "within_pacific.csv")
+    cross = pd.read_csv(RES / "crossclan.csv")
+    scen = ["Within one clan\n(7 clans)", "Between two\ndifferent clans\n(21 clan pairs)"]
+    qap = [within.qap_acc.mean() * 100, cross.qap_acc.mean() * 100]
+    base = [within.baseline_acc.mean() * 100, cross.baseline_acc.mean() * 100]
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.6))
+    x = np.arange(2); w = 0.38
+    b1 = ax.bar(x - w / 2, qap, w, color=BLUE, label="Using the back-and-forth patterns")
+    b2 = ax.bar(x + w / 2, base, w, color=ORANGE, label="Just guessing by how common each call is")
+    ax.axhline(6, ls="--", color=GREY, lw=1.5)
+    ax.text(1.5, 6, "pure luck ≈ 5–7%", ha="center", va="center", fontsize=10,
+            color=MUTED, bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none"))
+    for bars in (b1, b2):
+        for b in bars:
+            ax.annotate(f"{b.get_height():.0f}%", (b.get_x() + b.get_width() / 2, b.get_height()),
+                        xytext=(0, 3), textcoords="offset points", ha="center",
+                        fontsize=12, color=INK, fontweight="bold")
+    ax.set_xticks(x); ax.set_xticklabels(scen, fontsize=11)
+    ax.set_ylabel("Calls correctly identified (%)")
+    ax.set_ylim(0, 75)
+    _dress(ax)
+    _titles(ax, "Whales share the same calls across clans — but not how they string them together",
+            "The sequence patterns identify a call within its own clan (left). "
+            "Between two clans they fail completely (right) — even though both use the same calls.")
+    ax.legend(loc="upper left", bbox_to_anchor=(0.42, 0.98), frameon=True,
+              facecolor="white", edgecolor="none", fontsize=10.5)
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "4_within_vs_across_clans.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
     df = load_raw(); types = coda_type_index(df)
     fig_easy_hard(df, types); print("plain/3_easy_vs_hard_calls.png")
+    fig_crossclan(); print("plain/4_within_vs_across_clans.png")
 
 
 if __name__ == "__main__":

@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# Phase-2 raw data (no explicit license — fetch, do not redistribute)
+data/raw/hersh2022_pacific_coda.csv
+data/raw/sharma2024_dominica_coda.csv

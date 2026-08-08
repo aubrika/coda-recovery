@@ -77,7 +77,30 @@ budget.
 - README.md: question, controls, headline table, figures, method, the two data
   caveats, limitations, reproduce steps.
 
-## Status: M1–M4 complete.
+## Phase 2 — a genuine second system (Pacific clans) ✅
+Motivation: re-identifying a correspondence we already hold (same clan, answer =
+identity) is only a base case. Hersh et al. 2022 gives 7 Pacific clans (none is
+the Caribbean EC1), with a GLOBAL coda-type scheme → cross-clan alignment is
+gradeable (truth = identity over shared types) yet non-trivial (clans differ).
+
+- **Within-clan replication (positive control, easy split, top-15 types):**
+  mean QAP **0.61** vs baseline 0.48 across all 7 clans (REG 0.91, SH 0.85, …).
+  The base-case finding generalizes across clans and to bigger vocabularies.
+- **Cross-clan alignment (21 clan pairs, top-20 shared types):** QAP **0.026** ≈
+  baseline 0.024 ≈ null 0.032 — **at chance**, even on high-density pairs
+  (REG-SH 9 transitions/cell). Does not beat the null.
+
+**Verified not an artefact:** `coda_number` encodes real order (same-type-repeat
+3.2–6.2× chance, alongside Gero's 3.4×; shuffling kills it), and the pipeline
+recovers strongly within-clan on the easy split. So the cross-clan null is real.
+
+**Finding:** combinatorial role is **clan-specific**. The acoustic type inventory
+is shared across clans, but the *sequencing* that identifies a type within its
+clan does not transfer — the "what" is global, the "how" is a clan dialect.
+Figure: `figures/plain/4_within_vs_across_clans.png`. Data: `hersh.py`,
+`run_crossclan.py`, `results/{within_pacific,crossclan}.csv`.
+
+## Status: M1–M4 + Phase 2 complete.
 Verdict: combinatorial position re-identifies coda type above the frequency
 baseline (random +0.14, by_unit +0.14, both CIs clear of 0); objective sits below
 the strong null; recovery is data-limited (power curve monotonic). Cross-clan

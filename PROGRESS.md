@@ -167,3 +167,15 @@ baseline (random +0.14, by_unit +0.14, both CIs clear of 0); objective sits belo
 the strong null; recovery is data-limited (power curve monotonic). Cross-clan
 feasibility is cautiously supported — the one collapse (by_individual) is a
 power artefact of the 41%-attributed subset, not evidence against structure.
+
+## Correction: the factored model is NOT a regression
+An earlier framing compared legacy-21-type recovery on the Gero data (pooled,
+between-whale, +0.09/+0.52) against factored recovery on Sharma Dataset 2
+(single-whale) — two different datasets AND sequence definitions. Apples-to-apples
+on the SAME Dataset 2 single-whale data (`compare_codifications.py`,
+`results/codification_comparison.csv`): legacy 21-type +0.048 (ns), joint -0.136,
+rhythm -0.092, tempo +0.16. Legacy also fails here => the data model didn't cause
+the "regression"; the difference was pooled/between-whale vs single-whale. The
+(rhythm,tempo) grid is also a FINER partition than the 21 types (types split across
+tempo cells), so cell re-identification is a harder question, not a lossy one.
+Reinforces T_between (between-whale exchange) as the untested lead.

@@ -505,3 +505,19 @@ knowing the current coda beats base rates in every case — but that gain is mos
 **persistence** (repetition), which is uniform across tokens and therefore does not
 make them re-identifiable. High predictability with low re-identifiability is the
 expected signature of a system built on repetition plus a few dominant types.
+
+### 9. Is the factored model a regression? (no)
+
+A fair worry: if the classical 21 types were re-identifiable, re-codifying them as
+(rhythm, tempo) shouldn't lose that. Settled apples-to-apples on the SAME data and
+method (`compare_codifications.py`): on Dataset 2 single-whale sequences the
+**legacy 21-type recovery is itself non-significant (~+0.05)** — nothing
+re-identifies here except tempo, regardless of codification. So the data model is
+exonerated. Two things this clarifies: (a) the (rhythm, tempo) grid is a *finer*
+partition than the 21 types — a single legacy type such as `1+1+3` spans several
+tempo cells — so re-identifying cells is a *harder* question, not a lossy one; and
+(b) the earlier, larger "legacy recovered" numbers came from a *different* dataset
+(Gero, speaker-pooled) that included the **between-whale exchange**, which the
+single-whale analysis excludes. The difference was the data and the sequence
+definition, never the codification — and it points, again, at the between-whale
+exchange as the place to look next.

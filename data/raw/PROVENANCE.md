@@ -32,3 +32,14 @@
 - 8,718 codas, Clan uniformly EC1. Adds IDN (individual) + UnitNum vs Gero.
 - Not a second system; a curated/larger version of the primary clan. sha256 53dd44fbfb0040da93656aa44883954f3abe18dd6539e90c625af86a96db6b45
 - License: GitHub repo license = null (all-rights-reserved despite public posting).
+
+## SHARMA 2024 FACTORED MODEL (fetch via ../fetch_sharma.sh — gitignored)
+- Sharma et al. 2024, Nat Commun 15:3617; github pratyushasharma/sw-combinatoriality
+  (Zenodo 10.5281/zenodo.10817697). Paper is CC BY 4.0; repo has NO LICENSE file,
+  so raw + de-pickled data are gitignored (fetch + rebuild locally).
+- Dataset 2 = sperm-whale-dialogues.csv: 3840 DTag codas, ordered, REC (deployment),
+  Whale (speaker), TsTo (absolute onset s), raw ICIs. After >10-click exclusion: 3687.
+- rhythm (0..17) from rhythms.p, ornament from ornaments.p (both per-coda, row-aligned;
+  verified 100% vs nearest mean_codas template). tempo (0..4) derived from Duration bins
+  reproducing tempos-dict clusters exactly. rubato_dir derived per paper (Section 3).
+- De-pickled to a plain CSV so the pipeline never unpickles: see coda_model.py.

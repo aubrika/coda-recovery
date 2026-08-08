@@ -6,3 +6,7 @@ __pycache__/
 # Phase-2 raw data (no explicit license — fetch, do not redistribute)
 data/raw/hersh2022_pacific_coda.csv
 data/raw/sharma2024_dominica_coda.csv
+
+# Sharma 2024 deposit (fetch + de-pickle; no explicit repo licence)
+data/raw/sharma/
+data/derived/

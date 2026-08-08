@@ -102,6 +102,30 @@ def test_orthogonal_procrustes_reference():
     assert np.allclose(R, Q, atol=1e-8)
 
 
+def test_factored_kronecker_recovery_is_exact():
+    """The Kronecker-constrained recovery must exactly invert a known
+    P_rhythm ⊗ P_tempo relabelling (objective 0), validating the token indexing
+    and the exhaustive search (coda-4d-data-model.md 7.2)."""
+    from coda_recovery.recover_factored import _kron_perms, factored_recover
+
+    R, T, seed = 4, 3, 5
+    rng = np.random.default_rng(seed)
+    C = rng.integers(0, 6, size=(R * T, R * T)).astype(float)
+    TA = (C + 0.5) / (C + 0.5).sum(1, keepdims=True)
+    # apply a known Kronecker relabelling to build TB
+    pr, pt = rng.permutation(R), rng.permutation(T)
+    p = np.array([pr[i // T] * T + pt[i % T] for i in range(R * T)])
+    TB = TA[np.ix_(p, p)]
+    rec, obj = factored_recover(TA, TB, R, T)
+    assert obj == pytest.approx(0.0, abs=1e-9)
+    assert np.array_equal(rec, p)
+    # and a non-Kronecker permutation is NOT reachable (sanity: identity target
+    # recovers identity)
+    rec0, obj0 = factored_recover(TA, TA, R, T)
+    assert obj0 == pytest.approx(0.0, abs=1e-9)
+    assert np.array_equal(rec0, np.arange(R * T))
+
+
 def test_frequency_baseline_is_identity_when_ranks_agree():
     """If both halves share the same frequency ordering, the baseline is the
     identity — this is exactly why it is a strong control (spec 6.1)."""

@@ -276,6 +276,39 @@ def fig_syntax_vs_repetition():
     plt.close(fig)
 
 
+def fig_factored():
+    """Which part of a coda carries sequential order — the factored-model result
+    (rhythm vs tempo vs joint, full and syntax-only). Reads factored_recovery.csv."""
+    d = pd.read_csv(RES / "factored_recovery.csv")
+    d = d[d["real"].notna()].copy()          # marginal/joint rows (skip factored)
+    d["eff"] = d["paired_diff"]; d["lo"] = d["diff_lo"]; d["hi"] = d["diff_hi"]
+    name = {"tempo": "Tempo (duration)", "rhythm": "Rhythm (click pattern)", "joint": "Full type (rhythm+tempo)"}
+    d["label"] = [f"{name[e]}\n— {c}" for e, c in zip(d.experiment, d.cut)]
+    d = d.sort_values("eff")
+    y = np.arange(len(d))
+    fig, ax = plt.subplots(figsize=(9.5, 6))
+    ax.axvline(0, color="#444", lw=1.2)
+    for yi, (_, r) in zip(y, d.iterrows()):
+        c = BLUE if r.survives else GREY
+        ax.plot([r.lo, r.hi], [yi, yi], color=c, lw=3, solid_capstyle="round")
+        ax.plot(r.eff, yi, "o", color=c, ms=10)
+    ax.set_yticks(y); ax.set_yticklabels(d.label, fontsize=10)
+    ax.set_xlabel("Sequential signal:  accuracy(real order) − accuracy(scrambled)")
+    _dress(ax); ax.yaxis.grid(False); ax.xaxis.grid(True, color="#eeeeee")
+    _titles(ax, "Which part of a coda carries sequential order?",
+            "Break each coda into rhythm (click pattern) and tempo (duration). Only tempo shows a "
+            "signal (blue, clears zero) — consistent with the paper's 'rubato' duration drift.")
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(color=BLUE, label="Order genuinely helps (clears zero)"),
+                       Patch(color=GREY, label="No signal beyond frequency")],
+              loc="upper left", bbox_to_anchor=(0.01, 0.60), frameon=True,
+              facecolor="white", edgecolor="none", fontsize=10)
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "7_which_axis.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
@@ -284,6 +317,7 @@ def main():
     fig_order_forest(); print("plain/4_does_order_help.png")
     fig_real_vs_shuffled(); print("plain/5_real_vs_scrambled.png")
     fig_syntax_vs_repetition(); print("plain/6_repetition_vs_syntax.png")
+    fig_factored(); print("plain/7_which_axis.png")
 
 
 if __name__ == "__main__":

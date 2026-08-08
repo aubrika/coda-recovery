@@ -70,6 +70,10 @@ superseded by the re-audit.
   (with self-repetition) vs genuine syntax (self-repetition removed): EC1's signal
   jumps once repetition is removed (it was *hiding* the syntax), Pacific PO's
   collapses (it *was* repetition). Data: `syntax.py` → `results/syntax.csv`.
+- `7_which_axis.png` — **the factored-model result.** Splitting a coda into rhythm
+  (click pattern) and tempo (duration), only *tempo* carries a sequential signal —
+  consistent with the paper's "rubato" duration drift. `recover_factored.py` →
+  `results/factored_recovery.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

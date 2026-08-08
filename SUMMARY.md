@@ -197,6 +197,18 @@ not been asked before, so even this modest, careful answer is new ground.
 - We used the paper's rhythm/tempo labels for the Caribbean clan and *derived* them
   for the Pacific clans (nearest-template rhythm, per-clan duration classes), so the
   Pacific numbers are a faithful approximation, not identical measurements.
+- **EC1's much larger signal is mostly a measurement effect, not clan biology.**
+  EC1 is measured more cleanly than the others (native rhythm/tempo labels;
+  single-whale sequences from known speakers; the 41% attributed subset). Put EC1
+  through the *identical* Pacific pipeline — derived rhythm, quantile tempo, pooled
+  within-recording order, all codas — and its **rhythm** advantage collapses into the
+  Pacific band (total 0.81 → 0.35 bits) and its **tempo**-total advantage roughly
+  halves (1.38 → 0.92). The tempo signal stays comparatively high, but that residual
+  is confounded — pooling speakers folds in the between-whale "matching," and balanced
+  tempo bins give more MI headroom than native fixed edges — so it is *not* clean
+  evidence of a richer clan grammar. So the earlier "EC1 is special" impression is
+  largely how EC1 was measured, not a categorically more structured clan.
+  (`ec1_pacified.py` → `results/ec1_pacified.csv`.)
 
 ## Figures (`figures/plain/`)
 

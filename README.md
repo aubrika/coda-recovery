@@ -1,181 +1,165 @@
 # coda-recovery
 
-**Can sperm whale coda *types* be re-identified from their position in the coda
-transition graph alone — with the labels hidden — and does that beat simply
-matching types by how often they occur?**
+**Do sperm whales string their calls together in a meaningful order — and if so,
+is that order the same from one clan to the next?**
 
-Split one clan's coda corpus in half, build a transition structure from each half
-independently, anonymise the type labels, and search for the permutation that
-best aligns the two graphs. Because both halves come from the same clan (EC-1),
-the correct answer is known: the identity. The measurand is how much of it we
-recover — the **effective structural resolution** of the coda system.
+Sperm whales "talk" in short bursts of clicks, like Morse code. Each patterned
+burst is a **coda**. This project asks a simple question with a careful method:
+when a whale picks its next coda, does the choice depend on the current one —
+*beyond* the base rate of how often each coda happens to occur?
 
-> **Plain-language summary: [`SUMMARY.md`](SUMMARY.md).**
+**Short answer: yes, robustly, in every clan we tested — but the ordering itself
+is clan-specific.** The effect is real and reproducible, but modest: it makes the
+next call *more predictable*, not a rich, meaning-carrying "grammar."
 
-> ## ⚠️ Current finding (this section supersedes everything below)
-> The re-identification framing below (QAP graph-matching) turned out to be the
-> **wrong tool** — it breaks on the repetition-heavy (diagonal-dominant) transition
-> matrices sperm whale codas produce, and its result flips with the shuffle scale.
-> The trustworthy result comes from a **cross-validated mutual-information test**
-> (`predictive_info.py`, figure 9): the current coda genuinely predicts the next,
-> **beyond frequency**, robustly and cross-validated, in every clan
-> (+0.7 to +1.8 bits/coda) — but that grammar is **clan-specific** (it does not
-> transfer across clans; `clan_similarity.py`, figures 10–11). Ornament and rubato
-> add almost nothing on top of (rhythm,tempo) (`expressive.py`, figure 12). See
-> [`SUMMARY.md`](SUMMARY.md) for the consolidated story and the methods lesson.
-> Everything below is the **QAP-era record**, kept for honesty, superseded by the
-> above.
+> **Read this first:** [`SUMMARY.md`](SUMMARY.md) tells the whole story in plain
+> language — including the long detour through a method that kept giving fragile,
+> self-contradicting answers, and why the final method is trustworthy. This README
+> is the short version.
 
-## Headline (QAP-era — SUPERSEDED, see the box above)
+## The animals and their "words"
 
-The decisive test is the **paired real-vs-shuffled** comparison under a strict
-null (`run_reaudit.py`): split each clan's recordings into disjoint-session
-halves, top-15 types, and compare recovery on the **real** order against the
-**same codas with order scrambled within each session** (frequencies preserved,
-only sequence destroyed). The difference isolates what *order* contributes beyond
-frequency. A clan's signal survives iff that paired difference's 95% CI clears 0.
+Each whale population uses a set of distinct coda patterns — a small
+**vocabulary** (about 21 patterns in the Caribbean group, several dozen in the
+Pacific). Whales belong to **clans**: cultural groups, each with its own
+characteristic mix of codas, like regional dialects.
 
-| clan | real | shuffled | **real − shuffled (95% CI), of 15 types** | survives |
-|---|---|---|---|---|
-| **Caribbean EC1 (Gero)** | 0.39 | 0.29 | **+1.4 [+0.3, +2.5]** | **yes** |
-| Pacific PO | 0.32 | 0.22 | **+1.6 [+0.9, +2.4]** | **yes** |
-| Pacific SI | 0.49 | 0.26 | **+3.4 [+2.4, +4.5]** | **yes** |
-| Pacific REG | 0.38 | 0.30 | +1.2 [−0.2, +2.5] | no |
-| Pacific RI | 0.23 | 0.18 | +0.7 [0.0, +1.5] | no |
-| Pacific SH / FP / PALI | — | — | ≈ 0 | no |
+Recent work (Sharma et al. 2024) shows a coda is better described by *two dials*
+than one label:
 
-**A small but real within-clan sequential signal — about 1–3 of 15 types beyond
-frequency — survives in 3 of 8 clans (including the original EC1), is marginal in
-2, and absent in 3.** It is not driven by sample size (SI has the least data, the
-largest effect). **Cross-clan alignment fails throughout** (`run_crossclan.py`):
-the sequencing that helps within a clan does not transfer to another clan.
+- **Rhythm** — the pattern of gaps between clicks (like a drum pattern), 1 of 18.
+- **Tempo** — how long the whole coda lasts, 1 of 5 duration classes.
 
-### What this corrects
-Earlier versions of this README reported much larger effects (e.g. EC1 "+0.14
-over frequency", Pacific within-clan "0.61"). Those were **inflated** by two
-things the re-audit fixed: (1) grading against the frequency-**rank** baseline,
-which is too lenient — QAP exploits more marginal structure than rank-matching, so
-the **shuffle null** is the true bar; and (2) split-halves that shared sequences.
-Under the strict paired null on independent samples, only the modest signal above
-remains. The exploratory ladder/figures (`figures/plain/1–3`, `figures/*.png`)
-use the lenient baseline and **overstate** the effect — kept for the record, but
-superseded by the re-audit.
+The classic ~21 named types live *inside* this finer 18 × 5 grid.
+**Figure 1** shows where all ~23,700 codas in the study actually fall (Caribbean
+plus all 7 Pacific clans) — the whales concentrate on a handful of cells.
 
-## The controls (this is where a spurious result would come from)
+## How we ask the question — a prediction contest
 
-- **Frequency baseline** (the one that matters): match types by marginal-frequency
-  rank, using *no* structural information. Reported beside every number. The claim
-  is always "QAP recovered k where frequency recovered j," never "QAP recovered k."
-- **Strong null**: shuffle coda order *within segments* (preserving composition,
-  length, marginals, sparsity, sample size), rebuild everything, rerun the whole
-  pipeline. Isolates sequential structure from frequency/shape.
-- **Random-permutation null**: weak floor.
-- **Gap sweep**: the CodaNumber-gap parameter ∈ {1,2,3,5} does not move the result
-  (`results/gap_sweep.csv`) — it is not manufactured by that knob.
+The clean way to test whether order matters is **prediction**. Build two models
+on part of the data and test them on held-out recordings:
 
-## Figures
+- a **frequency-only** model — guess the next coda from base rates alone;
+- a **sequence** model — guess the next coda from the *current* one.
 
-**The honest result (`figures/plain/`)** — plain language, colorblind-safe:
-- `4_does_order_help.png` — **the headline.** Per clan, extra calls (of 15)
-  identifiable from sequence order alone, with 95% CI; blue = clears zero.
-- `5_real_vs_scrambled.png` — real order vs the order-scrambled control per clan;
-  where the bars nearly tie, order adds nothing.
-- `6_repetition_vs_syntax.png` — **the syntax cut.** Per clan, the full effect
-  (with self-repetition) vs genuine syntax (self-repetition removed): EC1's signal
-  jumps once repetition is removed (it was *hiding* the syntax), Pacific PO's
-  collapses (it *was* repetition). Data: `syntax.py` → `results/syntax.csv`.
-- `7_which_axis.png` — **the factored-model result.** Splitting a coda into rhythm
-  (click pattern) and tempo (duration), only *tempo* carries a sequential signal —
-  consistent with the paper's "rubato" duration drift. `recover_factored.py` →
-  `results/factored_recovery.csv`.
-- `8_clan_axis_grid.png` — **which dial carries re-identifiable order, per clan**
-  (8 clans × tempo/rhythm/joint). Tempo is most reproducible (4/8), but the
-  biggest clan REG uses rhythm/joint. `factored_by_clan.py` →
-  `results/factored_by_clan.csv`.
-- `9_predictive_information.png` — **the clean result (supersedes the QAP framing).**
-  Cross-validated bits the current (rhythm,tempo) token carries about the next —
-  all reliably positive, even with repeats removed. `predictive_info.py` →
-  `results/predictive_info.csv`.
-- `10_clan_cross_prediction.png` / `11_clan_procrustes.png` — **cross-clan grammar
-  comparison** (the right use of alignment): one clan's sequence model predicts
-  another clan's next coda *worse than that clan's own base rates* (negative
-  transfer), and clan transition-geometries are all distinct. Grammars are
-  clan-specific. `clan_similarity.py` → `results/clan_similarity.csv`.
-- `12_expressive_features.png` — **additive check:** do ornament/rubato add
-  predictive info on top of (rhythm,tempo)? Barely — only rubato's own weak
-  self-structure. `expressive.py` → `results/expressive.csv`.
+If the sequence model predicts the held-out next coda **better**, order carries
+real information. The size of that improvement, in **bits per coda**, is the
+**mutual information** between consecutive codas — how much knowing the current
+call reduces uncertainty about the next.
 
-**Exploratory, lenient-baseline (superseded — overstate the effect):**
-- `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the
-  EC1 ladder graded against the frequency-rank baseline. Kept for the record.
+This has two advantages that matter: there is **no scrambling** (the
+frequency-only model *is* the "order doesn't matter" baseline) and **no
+label-matching** — just an honest out-of-sample prediction contest. Cross-validation
+(train on some recordings, test on others) means the improvement can't be an
+artefact of overfitting.
 
-**Technical / methods (`figures/`)** — jargon retained for a specialist reader:
+## What we found
 
-- `ladder.png` — accuracy across the four splits, baseline + null as references.
-- `token_budget.png` — power curve: QAP rises 0.18→0.59 as pairs go 200→3.6k and
-  the margin over frequency *widens*; recovery is data-limited.
-- `confusion.png` — which types get swapped with which over 60 splits. Confusions
-  are **structured**: the two dominant types swap as a block, the D-family and
-  I-family each confuse internally, rare types smear. This is the effective
-  structural resolution: ~5–8 types reliably placed.
-- `null_histogram.png` — observed objective vs both nulls.
-- `triptych.png` — `T_A`, `T_B`, `P·T_A·Pᵀ` heatmaps.
-- `volumetric.html` — 3D structural embedding. **Decoration, labelled as such**:
-  the spectrum is flat (26.6% variance in 3 dims), so proximity is only weakly
-  meaningful (spec §8.1 gate).
-- `acoustic.html` — types in (clicks, duration, rhythm) space coloured by
-  structural position: does acoustic form entangle with combinatorial role?
+- **The current coda predicts the next, beyond frequency — in every clan.**
+  Within a single whale's stream (Caribbean clan): tempo **+1.40 bits**, rhythm
+  **+0.87**, both together **+1.80**. Much of that is whales repeating themselves,
+  but even with **repeats removed** the signal survives (tempo +0.81, rhythm +0.70).
+  Running the same test inside all 7 Pacific clans, **every clan** is positive on
+  both dials, repeats removed. Structured sequencing is a general feature, not a
+  quirk of one clan. **(Figure 2.)**
 
-## Method (the primary arm is QAP, not Procrustes)
+- **Whales predict each other's reply — but only its duration.** When two whales
+  take turns (reply within 2 seconds), the reply's **tempo** is predictable from
+  the first whale's coda (+0.52 bits); its rhythm and full type are not. This is
+  the "coda matching" and duration drift the paper describes. Based on ~480
+  turn-taking pairs, so read the weaker dials cautiously. **(Figure 3.)**
 
-A relabelling permutes rows *and* columns of the transition matrix simultaneously,
-so this is **graph matching**, solved with `scipy.optimize.quadratic_assignment`
-(FAQ + 2opt, many restarts). The QAP objective is verified against brute force on
-n≤7 in the tests — this caught a real sign/inverse-permutation convention bug (the
-naive `(T_A, T_B)` call silently optimises σ⁻¹; the correct call is
-`(T_B, T_A, maximize=True)`). A secondary spectral-Procrustes arm is included as
-the MUSE analogue but is an **approximate** optimiser: unsupervised
-embedding-matching gets trapped in local minima even on clean synthetic spectra —
-which is precisely the spec's reason QAP is primary. It is read against QAP, never
-as ground truth.
+- **Clans do not share a sequencing grammar.** Train the "what follows what" model
+  on clan A and use it to predict clan B: for *every* pair of different clans, A's
+  model predicts B **worse than B's own base rates**. A second method (aligning the
+  clans' transition-geometries as closely as possible) agrees — every clan pair is
+  distinct, with the Caribbean clan the biggest outlier. **The *what* is partly
+  shared** (overlapping coda inventories) but **the *how* — the order — is
+  clan-specific.** **(Figures 4 and 5.)**
 
-## Data & the two caveats it forced (`data/inventory/`)
+- **The "expressive" features add almost nothing.** The paper layers two extra
+  features on rhythm + tempo — **ornament** (an occasional extra click) and
+  **rubato** (duration drift across a run). On top of rhythm + tempo they add
+  essentially nothing to predicting the next call's identity (ornament +0.01,
+  rubato −0.31). The next call's rubato direction *is* weakly predictable (+0.13),
+  as the paper reports; its ornament is not. **(Figure 6.)**
 
-Gero, Whitehead & Rendell 2016, Dryad `doi:10.5061/dryad.ck4h0` (CC0). An
-inventory script audits the fields *before* any analysis (`data/raw/PROVENANCE.md`
-records retrieval — Dryad now fronts downloads with an Anubis proof-of-work wall).
+## Figures (`figures/plain/`)
 
-1. **No sub-second timestamp** — only day-level dates. The spec's seconds-based
-   inter-coda gap is not computable; ordering comes from the global monotonic
-   `CodaNumber`, and the gap parameter is a **CodaNumber gap** instead.
-2. **41% speaker attribution** — the rest are the `WhaleID==0` sentinel. This caps
-   the within/between-speaker and by-individual arms to a thin attributed subset.
+Plain-language, colorblind-safe. The palette is validated with the dataviz
+checks — the tempo/rhythm pair clears CVD ΔE 22.8 and normal-vision ΔE 28.9;
+sequential panels use one hue, the cross-prediction panel a diverging map with a
+neutral zero.
 
-## Limitations — what this does *not* show
+1. **`1_the_data_model.png`** — every coda is a rhythm × a tempo (the 18 × 5 grid),
+   with real coda counts pooled across the whole study (Caribbean + all 7 Pacific
+   clans). *What we measure.*
+2. **`2_current_predicts_next.png`** — in every clan, the current coda predicts the
+   next beyond frequency *and* repetition (both dials, all 8 clans, clearing zero).
+   *The headline.*
+3. **`3_between_whale_reply.png`** — the turn-taking exchange: only the reply's
+   duration is predictable from the first whale's coda.
+4. **`4_grammar_is_clan_specific.png`** — one clan's grammar predicts another's next
+   coda *worse than chance*; only the diagonal (a clan predicting itself) is warm.
+5. **`5_grammar_geometry.png`** — every clan's transition-geometry is distinct.
+6. **`6_expressive_adds_little.png`** — ornament and rubato add almost nothing on
+   top of rhythm + tempo.
 
-- **Not a cross-clan result.** by-unit is the closest analogue, but units within a
-  clan still share dialect; two clans share neither individuals nor dialect. This
-  establishes feasibility and a power requirement, not success.
-- **Underpowered.** ~2–4 transitions/cell against 441 cells; the power curve says a
-  cross-clan attempt wants substantially more than ~3.6k codas.
-- **No claim about meaning.** This is re-identification of type by structural role,
-  nothing about semantics, translation, or a "dictionary."
-- **The ceiling is real.** Rare types occupy near-identical structural positions
-  and are unidentifiable in principle. That ceiling is the measurand.
+## What this does *not* show
+
+- **The effect is modest** — fractions of a bit per coda beyond repetition. Real
+  and reproducible, but not a rich combinatorial language.
+- **Nothing about meaning.** Only that order is *structured*, not what any coda
+  "means" — no translation, no dictionary.
+- **Prediction is not identification.** Guessing the next coda is easy (75–85%,
+  mostly repetition). Working out *which coda is which* from position alone is much
+  harder — and trying to do that directly is what sent an earlier version of this
+  project down a long wrong path (see below).
+- **The between-whale result rests on little data** (~480 turn-taking pairs); tempo
+  there is solid, the other dials underpowered.
+
+## An earlier approach we retired (the honest part)
+
+For most of this project we asked the *identification* question with a graph-matching
+method called **QAP**. It kept producing fragile, contradictory answers — a signal
+that appeared, then vanished under a stricter control, then flipped sign depending
+on an arbitrary choice. The cause was diagnosable (whales repeat so much that the
+who-follows-whom table is dominated by its diagonal, which graph-matching handles
+unreliably), and the mutual-information test above has neither problem. **The
+finding was never fragile; the earlier tool was.** The full, unflattering history —
+including two null-construction bugs and a flawed cross-dataset comparison a
+reviewer caught — is in [`PROGRESS.md`](PROGRESS.md); the methods lesson is in
+[`SUMMARY.md`](SUMMARY.md).
+
+## Data & the caveats it forced
+
+Two sperm-whale sources, no other species:
+
+- **Caribbean clan (EC1)** — Sharma et al. 2024, Dataset 2 (3,687 codas with real
+  onset times and known speakers), using the paper's own rhythm and tempo labels.
+- **7 Pacific clans** — Hersh et al. 2022; rhythm derived by nearest EC1 template,
+  tempo by per-clan duration classes (a faithful approximation, not identical
+  measurements).
+
+Sharma's factored data is distributed as Python **pickles**; we de-pickle it once
+into a plain CSV so nothing in the analysis pipeline ever unpickles. Provenance and
+licences are in [`data/raw/PROVENANCE.md`](data/raw/PROVENANCE.md); unlicensed raw
+data is **fetched, not redistributed** (only the CC0 Gero data is committed).
 
 ## Reproduce
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+bash data/fetch_sharma.sh                        # fetch + de-pickle the factored data
 export PYTHONPATH=src
-python -m coda_recovery.inventory     # M1: fetch-audit (data already committed)
-python -m coda_recovery.run_m1_m2     # M1 acceptance + M2 random split-half
-python -m coda_recovery.run_m3        # M3 ladder + gap sweep + token budget
-python -m coda_recovery.figures       # ladder + token-budget PNGs
-python -m coda_recovery.m4            # confusion / triptych / null-hist / HTML views
-pytest                                # QAP-vs-bruteforce + procrustes + controls
+
+python -m coda_recovery.predictive_info          # within-clan MI (the clean result)
+python -m coda_recovery.predictive_info_sweep    # between-whale + all 7 Pacific clans
+python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 4, 5)
+python -m coda_recovery.expressive               # do ornament/rubato add anything? (fig 6)
+python -m coda_recovery.compare_codifications    # 'is the (rhythm,tempo) recoding a regression?' (no)
+python -m coda_recovery.plain_figures            # figures 1, 2, 3, 6
+pytest                                           # controls + QAP-vs-bruteforce, still green
 ```
 
 Results append to `results/`; provenance and inventory are committed for audit.
-(Code is ~1.5k lines, a little over the spec's ~1.2k target — the M4 diagnostics
-and two interactive HTML views account for the overrun.)

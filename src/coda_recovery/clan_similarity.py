@@ -18,6 +18,7 @@ Run:  python -m coda_recovery.clan_similarity
 from __future__ import annotations
 
 import csv
+import textwrap
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -126,23 +127,25 @@ def procrustes_distances(pairs):
     return D
 
 
-def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", invert_good=False):
+def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None):
     clans = CLAN_ORDER
     fig, ax = plt.subplots(figsize=(7.6, 6.6))
-    im = ax.imshow(M, cmap=cmap)
+    im = ax.imshow(M, cmap=cmap, norm=norm)
     ax.set_xticks(range(len(clans))); ax.set_xticklabels(clans, fontsize=10)
     ax.set_yticks(range(len(clans))); ax.set_yticklabels(clans, fontsize=10)
     ax.set_xlabel("predicted clan (B)"); ax.set_ylabel("model clan (A)")
-    lo, hi = np.nanmin(M), np.nanmax(M)
     for i in range(len(clans)):
         for j in range(len(clans)):
             v = M[i, j]
-            dark_cell = v > lo + (hi - lo) * 0.55   # high value = dark in both cmaps
+            r, g, b, _ = im.cmap(im.norm(v))      # text color from the actual cell color
+            lum = 0.299 * r + 0.587 * g + 0.114 * b
             ax.text(j, i, fmt.format(v), ha="center", va="center", fontsize=8,
-                    color="white" if dark_cell else "#222")
-    ax.set_title(title, loc="left", fontweight="bold", pad=24, color="#222")
+                    color="white" if lum < 0.5 else "#222")
+    sub = textwrap.fill(sub, width=74)
+    ax.set_title(title, loc="left", fontweight="bold", pad=16 + 13 * (sub.count("\n") + 1),
+                 color="#222")
     ax.annotate(sub, xy=(0, 1), xytext=(0, 8), xycoords="axes fraction",
-                textcoords="offset points", fontsize=10, color="#666")
+                textcoords="offset points", fontsize=10, color="#666", linespacing=1.3)
     fig.colorbar(im, fraction=0.046, pad=0.04)
     fig.tight_layout(); FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG / fname, dpi=150, bbox_inches="tight"); plt.close(fig)
@@ -180,13 +183,21 @@ def main():
         for i, A in enumerate(CLAN_ORDER):
             w.writerow(["procrustes_distance", A] + [round(D[i, j], 4) for j in range(len(CLAN_ORDER))])
 
-    _heatmap(T, "Does one clan's grammar predict another's next coda?",
-             "transfer[A→B] in bits/coda beyond B's own frequencies. Diagonal = within-clan. "
-             "Warm = shared sequencing.", "10_clan_cross_prediction.png", "YlOrRd")
-    _heatmap(D, "Geometry of clan grammars (Procrustes distance)",
-             "distance between clans' (rhythm,tempo) transition embeddings after best alignment "
-             "(0 = identical).", "11_clan_procrustes.png", "viridis_r", fmt="{:.2f}", invert_good=True)
-    print("\nwrote results/clan_similarity.csv, figures plain/10 & plain/11")
+    from matplotlib.colors import TwoSlopeNorm
+    # cross-prediction is diverging around a meaningful zero (positive = shared
+    # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
+    tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
+    _heatmap(T, "Does one clan's grammar predict another's next coda? — no",
+             "How well clan A's 'what-follows-what' model predicts clan B's next coda, beyond B's own "
+             "frequencies (bits/coda). Warm = shares grammar; cool = predicts worse than chance. "
+             "Only the diagonal (a clan predicting itself) is warm.",
+             "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
+    # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
+    _heatmap(D, "Each clan's sequencing has its own distinct shape",
+             "Distance between clans' (rhythm,tempo) transition patterns after the best possible "
+             "alignment (Procrustes; 0 = identical, darker = more different). Every clan pair is far apart.",
+             "5_grammar_geometry.png", "Purples", fmt="{:.2f}")
+    print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 
 
 if __name__ == "__main__":

@@ -200,17 +200,27 @@ not been asked before, so even this modest, careful answer is new ground.
 
 ## Figures (`figures/plain/`)
 
-- `9_predictive_information.png` — **the headline.** Cross-validated bits the current
-  coda carries about the next, per dial, with and without repeats. All positive.
-- `10_clan_cross_prediction.png` — clan×clan grammar transfer: within-clan positive,
-  every cross-clan pair negative. Grammars don't transfer.
-- `11_clan_procrustes.png` — geometry of clan grammars (Procrustes distance); all
+Plain-language and colorblind-safe; the palette is validated with the dataviz
+checks (tempo/rhythm categorical pair clears CVD ΔE 22.8 and normal-vision 28.9;
+figure 1 and 5 are one-hue sequential ramps, figure 4 a diverging map with a
+neutral zero).
+
+- `1_the_data_model.png` — every coda is a rhythm × a tempo (18 × 5 grid), with
+  real counts pooled across the whole study (Caribbean + all 7 Pacific clans).
+- `2_current_predicts_next.png` — **the headline.** In every clan, the current coda
+  predicts the next beyond frequency *and* repetition (both dials, all 8 clans).
+- `3_between_whale_reply.png` — the turn-taking exchange: only the reply's duration
+  is predictable from the first whale's coda.
+- `4_grammar_is_clan_specific.png` — clan×clan grammar transfer: only the diagonal
+  (a clan predicting itself) is positive; every cross-clan pair is negative.
+- `5_grammar_geometry.png` — geometry of clan grammars (Procrustes distance); all
   clans distinct, Caribbean the outlier.
-- `1`–`3` — the original Caribbean-clan analysis (uses the earlier, lenient
-  baseline; kept for the record, superseded by figure 9 and the MI sweep).
-- `4`–`8` — the QAP-era re-identification figures (per-clan, syntax, factored,
-  which-axis). Kept as the honest record of the detour; **superseded** by the
-  mutual-information results, which are the trustworthy ones.
+- `6_expressive_adds_little.png` — ornament and rubato add almost nothing on top of
+  (rhythm, tempo).
+
+The earlier QAP-era figures (re-identification ladder, per-clan syntax, factored
+recovery) have been removed; that detour survives as the narrative record in this
+document and in `PROGRESS.md`, not as figures.
 
 ## Reproduce
 

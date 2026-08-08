@@ -209,6 +209,24 @@ re-identify. So the *identifiable* sequential structure is a matter of
 *timing/expression*, not of which drum-pattern comes next. (Figure
 `7_which_axis.png`. Reproducible: `python -m coda_recovery.recover_factored`.)
 
+**Does this hold in other clans?** We repeated the split-by-dial test inside each
+of the 7 Pacific clans (deriving their rhythm and tempo the same way, since their
+recordings don't come pre-labelled). **Tempo is the most reproducible dial** — it
+carries a re-identifiable signal in **4 of the 8 clans** (Caribbean EC1 plus PALI,
+RI, SI), more than rhythm (1 of 8) or the full type (2 of 8). But it is *not a
+universal law*: the largest, best-measured clan (**REG**) has essentially *no*
+tempo signal and instead carries its re-identifiable structure in the **rhythm /
+full-type** dial. So "the order lives in the timing" is the *common* pattern
+across clans, not a rule — different clans put their little bit of sequential
+structure on different dials. (Figure `8_clan_axis_grid.png`; reproducible:
+`python -m coda_recovery.factored_by_clan`.)
+
+**Careful — "re-identify" is not "reconstruct the 21 types".** When tempo
+"re-identifies," it is telling apart the **5 duration classes**, not the old
+21-type labels (which this factored analysis sets aside entirely). And it is a
+different, harder task than *prediction* — which is the subject of the next
+section.
+
 ## Predicting the next call is not the same as identifying calls
 
 It is easy to conflate two very different questions, so it is worth separating

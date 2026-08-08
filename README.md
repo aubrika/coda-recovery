@@ -74,6 +74,10 @@ superseded by the re-audit.
   (click pattern) and tempo (duration), only *tempo* carries a sequential signal —
   consistent with the paper's "rubato" duration drift. `recover_factored.py` →
   `results/factored_recovery.csv`.
+- `8_clan_axis_grid.png` — **which dial carries re-identifiable order, per clan**
+  (8 clans × tempo/rhythm/joint). Tempo is most reproducible (4/8), but the
+  biggest clan REG uses rhythm/joint. `factored_by_clan.py` →
+  `results/factored_by_clan.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

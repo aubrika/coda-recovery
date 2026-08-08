@@ -309,6 +309,50 @@ def fig_factored():
     plt.close(fig)
 
 
+def fig_clan_axis_grid():
+    """Which dial carries re-identifiable order, per clan: an 8-clan × 3-axis grid.
+    EC1 from factored_recovery.csv (full cut); Pacific from factored_by_clan.csv."""
+    ec = pd.read_csv(RES / "factored_recovery.csv")
+    ec = ec[(ec["cut"] == "full") & ec["real"].notna()].set_index("experiment")
+    pac = pd.read_csv(RES / "factored_by_clan.csv")
+    clans = ["EC1", "REG", "SH", "FP", "PALI", "PO", "RI", "SI"]
+    axes = ["tempo", "rhythm", "joint"]
+    diff = np.zeros((len(clans), 3)); surv = np.zeros((len(clans), 3), bool)
+    for j, ax_name in enumerate(axes):
+        diff[0, j] = ec.loc[ax_name, "paired_diff"]; surv[0, j] = bool(ec.loc[ax_name, "survives"])
+    for i, c in enumerate(clans[1:], start=1):
+        for j, ax_name in enumerate(axes):
+            row = pac[(pac.clan == c) & (pac["mode"] == ax_name)].iloc[0]
+            diff[i, j] = row["paired_diff"]; surv[i, j] = bool(row["survives"])
+
+    fig, ax = plt.subplots(figsize=(7.2, 6.4))
+    for i in range(len(clans)):
+        for j in range(3):
+            d, s = diff[i, j], surv[i, j]
+            fc = BLUE if s else "#eef2f5"
+            ax.add_patch(plt.Rectangle((j, len(clans) - 1 - i), 1, 1, facecolor=fc,
+                                       edgecolor="white", lw=2))
+            ax.text(j + 0.5, len(clans) - 1 - i + 0.5, f"{d:+.2f}",
+                    ha="center", va="center", fontsize=11,
+                    color="white" if s else MUTED, fontweight="bold" if s else "normal")
+    ax.set_xlim(0, 3); ax.set_ylim(0, len(clans) + 0.9)
+    for j, lab in enumerate(["Tempo\n(duration)", "Rhythm\n(click pattern)", "Joint\n(both)"]):
+        ax.text(j + 0.5, len(clans) + 0.25, lab, ha="center", va="bottom", fontsize=11)
+    ax.set_xticks([])
+    ax.set_yticks(np.arange(len(clans)) + 0.5)
+    ax.set_yticklabels(clans[::-1], fontsize=11)
+    ax.tick_params(length=0)
+    for sp in ax.spines.values():
+        sp.set_visible(False)
+    _titles(ax, "Which dial carries re-identifiable order — by clan",
+            "Each cell = real − shuffled recovery of that dial in that clan (extra recovery over "
+            "the order-scrambled control). Blue = clears zero. Tempo is the most reproducible axis.")
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "8_clan_axis_grid.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     fig_main(); print("plain/1_main_result.png")
     fig_more_data(); print("plain/2_more_data_helps.png")
@@ -318,6 +362,7 @@ def main():
     fig_real_vs_shuffled(); print("plain/5_real_vs_scrambled.png")
     fig_syntax_vs_repetition(); print("plain/6_repetition_vs_syntax.png")
     fig_factored(); print("plain/7_which_axis.png")
+    fig_clan_axis_grid(); print("plain/8_clan_axis_grid.png")
 
 
 if __name__ == "__main__":

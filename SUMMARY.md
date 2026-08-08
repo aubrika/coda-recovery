@@ -77,16 +77,32 @@ We run everything **twice**, on the same split:
   times, each session is the same length, and all the frequencies are identical —
   the **only** thing destroyed is the sequence.
 
+Here is a **real 20-coda recording session** from the Caribbean clan, in its true
+order and in one scrambled copy (each column is one coda in time; both rows
+contain exactly thirteen `1+1+3`, four `5R1`, three `7I`):
+
+```
+ time →      1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20
+ REAL     1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3  5R1  5R1  5R1  5R1  7I   7I   7I 1+1+3 1+1+3
+ SHUFFLED 1+1+3 1+1+3  5R1  5R1  5R1  7I 1+1+3  7I 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3 1+1+3  7I 1+1+3 1+1+3  5R1
+```
+
+The **real** row is *blocky*: long runs of one coda, then a clean switch to the
+next (…`1+1+3`→`5R1`→`7I`→`1+1+3`…). The **shuffled** row has the identical
+thirteen/four/three counts but the blocks are gone. A method that keys on *order*
+sees a difference between these two rows; a method that keys only on *how common
+each coda is* sees them as identical. That gap is exactly what we measure.
+
 The shuffled version is the honest yardstick: it is a "what if order didn't matter
 at all?" copy of the same data. Anything the computer still recovers from the
 shuffled data, it is getting **from frequency alone**. So the quantity that
 actually answers our question is:
 
-> **real − shuffled** = the part of the recovery that genuinely comes from order.
+> **real − shuffled** = the part of the recovery that genuinely comes from coda order.
 
 This also disposes of two worries at once. *Is it just the very common coda like*
-`1+1+3`*?* No — the shuffled copy keeps `1+1+3` exactly as common, so if real beats
-shuffled, it is beating that commonness. *Could a small dataset just look
+`1+1+3`*?* No — the shuffled copy keeps `1+1+3` exactly as common, so if prediction in the real dataset beats
+shuffled, it should also be beating that frequency. *Could a small dataset just look
 structured by chance?* Any such fluke is baked into the size and composition of
 the data — and the shuffled copy has the identical size and composition — so the
 fluke appears equally in both and cancels in the difference. And note the
@@ -113,23 +129,65 @@ with a 95% confidence range on the average difference — see Method):
   that add little to the *difference*. The mid-frequency codas carry the order
   signal. (It is, however, sensitive to exactly how many types you include —
   shrinking to 13 types loses significance — an honest sign the effect is small.)
-- It is **not** about how much data we had: the clan with the *least* data (SI)
-  showed the *strongest* effect. It seems to be a real difference between clans.
+- The clan with the *least* data (SI) shows the *strongest* effect, which rightly
+  invites suspicion — a small dataset gives a noisier, easier-to-fluke estimate.
+  We checked it two ways and it holds up: SI's signal is **genuine syntax, not
+  self-repetition** (it is unchanged when self-repeats are removed — see next
+  section), and its confidence range is well clear of zero. We nonetheless treat
+  the *magnitude* and the "strongest of all clans" ranking with caution: with only
+  ~1,200 codas and 15 sessions, SI's number is the **least precise**, and we would
+  want more SI data before leaning on the ordering. (The effect is *not* generally
+  explained by data volume — but neither do we claim less data causes more signal.)
 - **Across two different clans, the order does not transfer.** The sequencing that
   helps identify a coda inside its own clan tells you nothing about another clan.
   (This negative is itself limited by data — with only a few thousand codas per
   clan, a weak shared signal could be there and we would miss it — so we state it
   as "no evidence of transfer," not "proof of none.")
 
+## Is it grammar, or just repetition?
+
+Sperm whales **repeat the same coda a lot** — in the Caribbean clan, 79% of
+back-to-back pairs are the *same* type (you can see it in the worked example:
+eleven `1+1+3` in a row). Repeating a coda is technically "order," but it is a
+trivial kind. The interesting question is whether there is genuine **syntax** —
+does coda A tend to be followed by a *different* coda B in a patterned way?
+
+We can separate the two. Self-repetition lives on the "diagonal" of the
+who-follows-whom table (type → same type); genuine syntax lives off it (type →
+different type). So we re-ran the whole paired test **with self-repetition removed**
+(diagonal zeroed, for both real and shuffled). What survives is real syntax:
+
+| clan | full (with self-repeats) | off-diagonal (syntax only) | reading |
+|---|---|---|---|
+| **Caribbean EC1** | +1.4 of 15 | **+7.8 of 15** | **strong syntax** (repeats were *hiding* it) |
+| **Pacific SI** | +3.4 | **+3.3** | **genuine syntax** (unchanged) |
+| **Pacific REG** | +1.2 (borderline) | **+1.0** ✓ | **modest syntax** (repeats were masking it) |
+| Pacific PO | +1.6 ✓ | −0.5 | **was just repetition** — no real syntax |
+| SH / FP / PALI / RI | ≈ 0 | ≈ 0 | nothing |
+
+Two things fall out, and both matter:
+
+- **The signal is genuinely syntactic, not mere repetition.** In the Caribbean
+  clan, removing self-repeats makes the effect *far larger* (from +1.4 to +7.8 of
+  15). The whales' self-repetition was actually *diluting* the who-follows-what
+  structure, because repeats are the same for every coda and carry little identity.
+- **But it is honest to separate the clans.** Once you demand real syntax,
+  **PO drops out** (its apparent signal was pure repetition), while **REG comes in**.
+  So the clans with genuine sequencing structure are **EC1, SI, and REG** — still
+  3 of 8, but not the same 3 the headline number gave.
+
+(Reproducible: `python -m coda_recovery.syntax`.)
+
 ## What it means
 
 Mostly, a sperm whale coda's identity lives in **how it sounds** and **how often
-it's used** — not strongly in where it sits in a sequence. But there is a **faint,
-real trace of sequential structure** in some clans, including the original one,
-and it is **statistically distinguishable from both random guessing and
+it's used** — and, on top of that, in a lot of plain **repetition**. But underneath
+the repetition there is **genuine syntax** in a few clans (Caribbean EC1, Pacific
+SI and REG): a real tendency for particular codas to follow particular *other*
+codas, **statistically distinguishable from both random guessing and
 frequency-based guessing** (that is what "the confidence range clears zero"
 means — across repeated tests, real order reliably beat the frequency-preserving
-shuffle). It is subtle, it varies between clans, and it does not carry across
+shuffle). It is modest, it varies between clans, and it does not carry across
 clans.
 
 So: not "whale grammar" in any bold sense — but a small, honest signal that a few
@@ -284,6 +342,25 @@ This paired design is why the earlier, cruder comparison (observed mean vs. an
 unpaired null's 95th percentile) was replaced — that mixed paired signal with
 split-to-split variance and was not a valid test. (Code: `run_reaudit.py`;
 per-clan numbers in `results/reaudit.csv`.)
+
+### 6b. Robustness checks
+
+Two targeted checks probe whether the surviving signal is what it appears to be —
+both reproducible, both reported honestly including where they *complicate* the
+story:
+
+- **Is it just the dominant coda?** (`robustness.py`) Re-run the paired test on the
+  Caribbean clan with the two most common codas removed. The effect *strengthens*
+  (from +1.4 to +2.0 of 15) — the common codas are matched by frequency and add
+  little to the difference — but it is sensitive to how many types are kept
+  (dropping to 13 loses significance), a sign the effect is small.
+- **Is it syntax or self-repetition?** (`syntax.py`) Re-run with self-repetition
+  removed (the transition matrix's diagonal zeroed for both real and shuffled), so
+  only "coda A → *different* coda B" structure remains. Genuine syntax survives in
+  EC1 (much stronger: +7.8 of 15), SI (+3.3), and REG (+1.0); Pacific PO's
+  full-matrix signal was **pure repetition** and vanishes; the rest stay null.
+  This reorders which clans count as having real sequencing structure and is
+  treated as the more meaningful cut in "Is it grammar, or just repetition?" above.
 
 ### 7. What we deliberately did *not* claim, and errors we caught
 

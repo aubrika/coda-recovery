@@ -100,7 +100,42 @@ clan does not transfer — the "what" is global, the "how" is a clan dialect.
 Figure: `figures/plain/4_within_vs_across_clans.png`. Data: `hersh.py`,
 `run_crossclan.py`, `results/{within_pacific,crossclan}.csv`.
 
-## Status: M1–M4 + Phase 2 complete.
+## Phase 2b — airtight test PARTIALLY REFUTES the Phase-2 claim ⚠️
+Attempting to make "combinatorial role is clan-specific" airtight (matched type
+set K=15, matched token budget T=500, nulls mirrored to each condition's split)
+walked the claim back. `run_airtight.py`, `results/airtight.csv`.
+
+| condition | QAP (95% CI) | rank-baseline | null p95 | clears null? |
+|---|---|---|---|---|
+| within_easy (shared seqs) | 0.451 [0.07, 0.87] | 0.409 | 0.800 | **no** |
+| within_hard (disjoint reps, same clan) | 0.182 [0.00, 0.53] | 0.143 | 0.453 | **no** |
+| cross (different clans) | 0.032 [0.00, 0.13] | 0.052 | 0.133 | **no** |
+
+Two corrections this forces:
+1. **`within_hard` fails its null too.** It differs from `cross` only in the clan
+   boundary, and both fail — so the cross-clan collapse is NOT attributable to
+   clans specifically. The signal dies at independent repertoires within a clan.
+2. **The frequency-RANK baseline was too lenient.** QAP exploits more marginal
+   structure than rank-matching, so the shuffle NULL (0.45 here) is the true bar,
+   well above the rank baseline (0.14). Earlier "beats baseline/null" wins —
+   including the Phase-2 within-clan 0.61 and likely the EC1 headline — were
+   inflated by sample-sharing leakage + this lenient baseline.
+
+**What still stands:** cross-clan alignment fails (recovery at chance, below its
+own low null) — robust. **What does NOT:** clan-specificity, and the magnitude of
+the within-clan positive. Both need the strict-null re-audit below.
+
+## REQUIRED NEXT: strict re-audit
+Re-run the ORIGINAL EC1 ladder (and Phase-2 within-clan) with the shuffle null as
+the primary bar (not the rank baseline) and disjoint-sample splits, matched
+budget. Determine what, if anything, clears the strict null. Treat every earlier
+"positive" as provisional until it does. Literature note: the cross-clan
+transition question is genuinely NOVEL (nearest: "Rhythm of the Deep" arXiv
+2606.16084, single clan; Sharma 2024 within-clan; Hersh 2022 / Rendell & Whitehead
+2003 cross-clan but repertoire-only) — but novelty is worth nothing until the
+strict re-audit says a signal survives.
+
+## Status: M1–M4 + Phase 2 done; Phase-2 claim under strict-null re-audit.
 Verdict: combinatorial position re-identifies coda type above the frequency
 baseline (random +0.14, by_unit +0.14, both CIs clear of 0); objective sits below
 the strong null; recovery is data-limited (power curve monotonic). Cross-clan

@@ -12,7 +12,21 @@ recover — the **effective structural resolution** of the coda system.
 
 > **Plain-language summary: [`SUMMARY.md`](SUMMARY.md).**
 
-## Headline (after a strict re-audit)
+> ## ⚠️ Current finding (this section supersedes everything below)
+> The re-identification framing below (QAP graph-matching) turned out to be the
+> **wrong tool** — it breaks on the repetition-heavy (diagonal-dominant) transition
+> matrices sperm whale codas produce, and its result flips with the shuffle scale.
+> The trustworthy result comes from a **cross-validated mutual-information test**
+> (`predictive_info.py`, figure 9): the current coda genuinely predicts the next,
+> **beyond frequency**, robustly and cross-validated, in every clan
+> (+0.7 to +1.8 bits/coda) — but that grammar is **clan-specific** (it does not
+> transfer across clans; `clan_similarity.py`, figures 10–11). Ornament and rubato
+> add almost nothing on top of (rhythm,tempo) (`expressive.py`, figure 12). See
+> [`SUMMARY.md`](SUMMARY.md) for the consolidated story and the methods lesson.
+> Everything below is the **QAP-era record**, kept for honesty, superseded by the
+> above.
+
+## Headline (QAP-era — SUPERSEDED, see the box above)
 
 The decisive test is the **paired real-vs-shuffled** comparison under a strict
 null (`run_reaudit.py`): split each clan's recordings into disjoint-session
@@ -83,11 +97,13 @@ superseded by the re-audit.
   all reliably positive, even with repeats removed. `predictive_info.py` →
   `results/predictive_info.csv`.
 - `10_clan_cross_prediction.png` / `11_clan_procrustes.png` — **cross-clan grammar
-- `12_expressive_features.png` — **additive check:** do ornament/rubato add predictive info on top of (rhythm,tempo)? Barely — only rubato's own weak self-structure. `expressive.py` → `results/expressive.csv`.
   comparison** (the right use of alignment): one clan's sequence model predicts
   another clan's next coda *worse than that clan's own base rates* (negative
   transfer), and clan transition-geometries are all distinct. Grammars are
   clan-specific. `clan_similarity.py` → `results/clan_similarity.csv`.
+- `12_expressive_features.png` — **additive check:** do ornament/rubato add
+  predictive info on top of (rhythm,tempo)? Barely — only rubato's own weak
+  self-structure. `expressive.py` → `results/expressive.csv`.
 
 **Exploratory, lenient-baseline (superseded — overstate the effect):**
 - `1_main_result.png`, `2_more_data_helps.png`, `3_easy_vs_hard_calls.png` — the

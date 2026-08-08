@@ -178,6 +178,71 @@ Two things fall out, and both matter:
 
 (Reproducible: `python -m coda_recovery.syntax`.)
 
+## Zooming in: is it the *rhythm* or the *timing*?
+
+So far we treated each coda as a single label (like "`1+1+3`"). But recent work
+(Sharma et al. 2024) shows a coda is better described by **two independent dials**:
+
+- its **rhythm** — the *pattern* of gaps between clicks (like a drum pattern), and
+- its **tempo** — how *long* the whole coda takes (fast or slow),
+
+plus two fine "expressive" touches: an occasional extra **ornament** click, and
+**rubato** — a smooth speeding-up or slowing-down of duration across a run of
+codas. We rebuilt the whole analysis on this richer description, using the paper's
+own rhythm/tempo labels and a cleaner recording set that comes with **real
+timestamps and known individual speakers** (so "next coda" and "same whale" are
+exact, not approximated).
+
+Then we asked a sharper question than before: **which dial carries the sequential
+signal — the rhythm, or the timing?** We split each coda into its rhythm and its
+tempo and ran the same re-identification test on each.
+
+**The answer is timing, not pattern.** Only **tempo** shows a re-identifiable
+sequential signal (clears the shuffle bar); **rhythm** does not. In plain terms: a
+whale's *click pattern* doesn't sit in a detectable order, but its *durations
+drift in a structured way* across a run — which is exactly the **rubato** the
+paper describes. So the little sequential structure that exists is a matter of
+*timing/expression*, not of which drum-pattern comes next. (Figure
+`7_which_axis.png`. Reproducible: `python -m coda_recovery.recover_factored`.)
+
+## Predicting the next call is not the same as identifying calls
+
+It is easy to conflate two very different questions, so it is worth separating
+them plainly — especially because they give opposite-looking answers:
+
+1. **Prediction** — *given the current coda, can you guess the next one?*
+2. **Identification** (what this whole project measures) — *if you hid every
+   label, could you work out which coda is which from its position in sequences
+   alone?*
+
+**Prediction is easy here.** You can guess the next coda **75–85%** of the time.
+Even *rhythm alone* predicts the next coda **82%** of the time. Almost all of that,
+though, comes from two dull facts: whales **repeat** (the next coda is the same as
+the current one ~80% of the time), and a **few codas are very common** (one rhythm
+is 64% of all codas). Knowing the current coda does add real predictive power on
+top of the base rate — but mostly by telling you "expect a repeat."
+
+**Identification is much harder, and mostly fails** — because the very thing that
+makes codas predictable (everyone repeats) is *identical for every coda*, so it
+gives you no way to tell them apart. Only tempo behaves distinctively enough
+(its durations drift *directionally*) to be identified.
+
+An analogy: in English you can reliably predict that the word after "the" is a
+noun. But if someone erased every word and handed you only "which word-blob
+follows which," you would struggle to point to which blob is "the" — because *many*
+words are followed by nouns. **Predictable is not the same as identifiable.**
+
+So, to answer the two natural questions directly:
+
+- *Can we still predict the next coda from sequence data?* **Yes, very well** — for
+  rhythm, tempo, and the full type alike (the current coda helps in every case).
+- *Can we re-identify (reconstruct) coda types from sequence position alone,
+  beyond frequency?* **Mostly no** for the click-pattern/rhythm and the full type
+  on this dataset; **yes for tempo.** The data-model refactor did not remove
+  predictability — it let us pinpoint that the *identifiable* sequential structure
+  lives specifically in **timing**. (Reproducible: `python -m
+  coda_recovery.predictability`.)
+
 ## What it means
 
 Mostly, a sperm whale coda's identity lives in **how it sounds** and **how often
@@ -206,6 +271,12 @@ clan) — so even the modest answer is new ground.
   power limit rather than a true absence.
 - This says **nothing about meaning**: we ask whether order is *structured*, not
   what any coda "means."
+- **The rhythm/tempo split has its own limits.** We only looked at single-whale
+  runs (one whale's own codas), not the back-and-forth *between* whales, which may
+  hold more structure. And a formal test of whether rhythm and tempo combine
+  independently in sequence was **not answerable** on this data: one rhythm is 64%
+  of all codas, so that test collapses to "match the common one" and learns
+  nothing. We report that as a dead end rather than a result.
 
 ---
 
@@ -371,3 +442,37 @@ Two separate null-construction bugs were found and fixed along the way (nulls th
 did not mirror their condition's split, producing impossibly high "chance"
 levels). The strict, paired, disjoint-session re-audit in §6 supersedes all of it,
 and the numbers above are what remains after those corrections.
+
+### 8. The factored (rhythm, tempo, ornament, rubato) data model
+
+A later refinement replaced the single categorical coda "type" with Sharma et
+al.'s (2024) factored representation: each coda is a **rhythm** (1 of 18 click
+patterns) and a **tempo** (1 of 5 duration classes), plus two context features,
+**ornament** and **rubato**. We use the paper's *own* published labels (verified
+against its cluster templates — rhythm match 100%, ornament rate 3.8% vs the
+paper's ~4%) and its Dataset 2 (3,687 DTag codas with real onset times and speaker
+IDs), de-pickled into a plain CSV so nothing in the pipeline unpickles.
+(`coda_model.py`, `inventory_factored.py`; 64 of 90 rhythm×tempo cells attested.)
+
+The **firewall** is unchanged: rhythm/tempo are the recovery *target* and are never
+fed to the matcher, nor are duration, click count, or the raw intervals — only
+transition counts between (rhythm, tempo) tokens. Transitions are built from
+single-whale call sequences (same speaker, consecutive codas ≤ 8 s apart — the
+paper's rule, now exact thanks to real timestamps).
+
+Three experiments (`recover_factored.py`): (7.1) **joint** recovery over the
+top-K (rhythm, tempo) cells; (7.3) **marginal** recovery of rhythm alone and tempo
+alone — *which axis carries the signal?*; and (7.2) **factored** recovery under a
+Kronecker-constrained permutation (relabel rhythms and tempos independently), whose
+exhaustive solver is verified exact against a known relabelling in the tests. Only
+tempo's marginal recovery clears the shuffle bar; the factored test is degenerate
+here (rhythm-frequency skew — see Honest limits).
+
+**Recovery vs prediction.** These experiments measure *re-identification* (matching
+anonymized tokens across independent recordings by transition fingerprint), which
+is strictly harder than *prediction* (guessing the next coda). `predictability.py`
+quantifies the gap: next-coda prediction runs 75–85% (rhythm alone 82%), and
+knowing the current coda beats base rates in every case — but that gain is mostly
+**persistence** (repetition), which is uniform across tokens and therefore does not
+make them re-identifiable. High predictability with low re-identifiability is the
+expected signature of a system built on repetition plus a few dominant types.

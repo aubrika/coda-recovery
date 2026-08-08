@@ -1,0 +1,4 @@
+mode,n_tokens,top_token_share,marginal,persistence,bigram,bigram_minus_marginal,gain_std
+rhythm,18,0.64,0.673,0.806,0.819,0.145,0.035
+tempo,5,0.415,0.402,0.851,0.851,0.448,0.041
+joint,64,0.352,0.351,0.742,0.749,0.397,0.035

@@ -189,7 +189,8 @@ def main():
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",
              "Each cell = Procrustes distance: the smallest ‖A·R − B‖ over rotations R, where A and B "
-             "are the two clans' unit-normalized (rhythm,tempo) transition embeddings (0 = identical).",
+             "are the two clans' unit-normalized (rhythm,tempo) transition embeddings "
+             "(0 = the two clans' transition patterns are identical; larger = more different).",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 

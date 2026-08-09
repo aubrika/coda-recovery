@@ -184,7 +184,7 @@ def main():
              "Each cell (bits/coda) = average over clan B's codas of\n"
              r"$\log_{2}\,P_A(\mathrm{next}\mid\mathrm{current})\;-\;\log_{2}\,P_B(\mathrm{next})$,"
              "\n"
-             r"where $P_A$ = clan A's transition probability and $P_B$ = clan B's base rate.",
+             r"where $P_A$ = clan A's transition probability and $P_B$ = clan B's overall coda frequency.",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",

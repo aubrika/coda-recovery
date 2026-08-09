@@ -100,22 +100,29 @@ def procrustes_distances(pairs):
         PMI = np.log(P / (pi * pj))
         U, S, _ = np.linalg.svd(PMI)
         emb[c] = U[:, :EMB_D] * np.sqrt(S[:EMB_D])
+    # Scale each embedding to unit Frobenius norm BEFORE aligning, so the distance
+    # is symmetric (D[A,B] == D[B,A]) and scale-free. Dividing the residual by the
+    # target's norm — as an earlier version did — broke symmetry, because clans'
+    # embeddings differ in magnitude. The rotation-aligned residual between two
+    # unit-norm matrices is symmetric by construction.
+    en = {c: e / np.linalg.norm(e) for c, e in emb.items()}
     clans = CLAN_ORDER
     D = np.zeros((len(clans), len(clans)))
     for i, A in enumerate(clans):
         for j, B in enumerate(clans):
-            R, _ = orthogonal_procrustes(emb[A], emb[B])
-            D[i, j] = np.linalg.norm(emb[A] @ R - emb[B]) / np.linalg.norm(emb[B])
+            R, _ = orthogonal_procrustes(en[A], en[B])
+            D[i, j] = np.linalg.norm(en[A] @ R - en[B])
     return D
 
 
-def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None):
+def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None,
+             xlabel="predicted clan (B)", ylabel="model clan (A)"):
     clans = CLAN_ORDER
     fig, ax = plt.subplots(figsize=(7.6, 6.6))
     im = ax.imshow(M, cmap=cmap, norm=norm)
     ax.set_xticks(range(len(clans))); ax.set_xticklabels(clans, fontsize=10)
     ax.set_yticks(range(len(clans))); ax.set_yticklabels(clans, fontsize=10)
-    ax.set_xlabel("predicted clan (B)"); ax.set_ylabel("model clan (A)")
+    ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
     for i in range(len(clans)):
         for j in range(len(clans)):
             v = M[i, j]
@@ -177,8 +184,8 @@ def main():
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",
              "Distance between clans' (rhythm,tempo) transition patterns after the best possible "
-             "alignment (Procrustes; 0 = identical, darker = more different). Every clan pair is far apart.",
-             "5_grammar_geometry.png", "Purples", fmt="{:.2f}")
+             "alignment (Procrustes; 0 = identical, darker = more different). Symmetric; every clan pair is far apart.",
+             "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 
 

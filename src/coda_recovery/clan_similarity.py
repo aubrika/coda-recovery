@@ -180,13 +180,14 @@ def main():
     # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
     tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
     _heatmap(T, "Does one clan's grammar predict another's next coda?",
-             "Each cell = bits by which clan A's grammar beats clan B's own base rates at predicting "
-             "B's next coda (warm = shared, cool = worse than chance).",
+             "Each cell (bits/coda) = mean over clan B's held-out codas of "
+             "[ log2 P_A(next│current) − log2 P_B(next) ]: clan A's transition model P_A scored "
+             "against clan B's own base rates P_B.",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",
-             "Each cell = how different two clans' transition patterns are, after best alignment "
-             "(0 = identical, darker = more different).",
+             "Each cell = Procrustes distance: the smallest ‖A·R − B‖ over rotations R, where A and B "
+             "are the two clans' unit-normalized (rhythm,tempo) transition embeddings (0 = identical).",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 figures plain/3 & plain/4 plain/5")
 

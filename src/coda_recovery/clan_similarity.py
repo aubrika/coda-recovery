@@ -180,7 +180,7 @@ def main():
     # cross-prediction is diverging around a meaningful zero (positive = shared
     # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
     tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
-    _heatmap(T, "Does one clan's grammar predict another's next coda?",
+    _heatmap(T, "Does one clan's sequence structure predict another's next coda?",
              "Each cell (bits/coda) = average over clan B's codas of\n"
              r"$\log_{2}\,P_A(\mathrm{next}\mid\mathrm{current})\;-\;\log_{2}\,F_B(\mathrm{next})$,"
              "\n"

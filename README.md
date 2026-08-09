@@ -60,13 +60,20 @@ artefact of overfitting.
   +0.47, all clear of zero. Structured sequencing is a general feature, not a quirk of
   one clan. **(Figure 2.)**
 
+- **But only *tempo's* rule is shared across clans.** Ask a model to predict a clan
+  it has *never seen* (train on 7 clans, test on the 8th, scored against that clan's
+  own base rates — so the current coda gets no credit for revealing which clan it is):
+  tempo's sequencing still works, positive for **all 8** clans, so duration-drift is a
+  **universal** rule. Rhythm's does **not** (positive for only 1 of 8) — its grammar is
+  a **clan-specific dialect**. **(Figure 3.)**
+
 - **Clans do not share a sequencing grammar.** Train the "what follows what" model
   on clan A and use it to predict clan B: for *every* pair of different clans, A's
   model predicts B **worse than B's own base rates**. A second method (aligning the
   clans' transition-geometries as closely as possible) agrees — every clan pair is
   distinct, with the Caribbean clan the biggest outlier. **The *what* is partly
   shared** (overlapping coda inventories) but **the *how* — the order — is
-  clan-specific.** **(Figures 3 and 4.)**
+  clan-specific.** **(Figures 4 and 5.)**
 
 ## Figures (`figures/plain/`)
 
@@ -81,9 +88,11 @@ neutral zero.
 2. **`2_current_predicts_next.png`** — in every clan, the current coda predicts the
    next beyond frequency *and* repetition (both dials, all 8 clans, clearing zero).
    *The headline.*
-3. **`3_grammar_is_clan_specific.png`** — one clan's grammar predicts another's next
+3. **`3_shared_vs_clan_specific.png`** — leave-one-clan-out: tempo's rule transfers to
+   an unseen clan (universal), rhythm's does not (clan-specific dialect).
+4. **`4_grammar_is_clan_specific.png`** — one clan's grammar predicts another's next
    coda *worse than chance*; only the diagonal (a clan predicting itself) is warm.
-4. **`4_grammar_geometry.png`** — every clan's transition-geometry is distinct.
+5. **`5_grammar_geometry.png`** — every clan's transition-geometry is distinct.
 
 ## What this does *not* show
 
@@ -126,7 +135,8 @@ bash data/fetch_phase2.sh                        # fetch the 7 Pacific clans (He
 export PYTHONPATH=src
 
 python -m coda_recovery.predictive_info_sweep    # within-clan MI, all 8 clans (uniform)
-python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 3, 4)
+python -m coda_recovery.universal_structure      # shared vs clan-specific (leave-one-out, fig 3)
+python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 4, 5)
 python -m coda_recovery.ec1_pacified             # methods check: native EC1 vs uniform
 python -m coda_recovery.plain_figures            # figures 1, 2
 pytest                                           # MI-core sanity tests

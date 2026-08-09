@@ -4,9 +4,11 @@
 
 **Yes — robustly.** A sperm whale's current call genuinely predicts its next one,
 *beyond* how common each call is, and this holds in **every clan we tested** (the
-Caribbean clan plus all 7 Pacific clans). It even holds when we remove the easy
-part (whales repeating themselves). The effect is real but modest: it makes the
-next call *more predictable*, not a "grammar" in any rich, meaning-carrying sense.
+Caribbean clan plus all 7 Pacific clans), even after we remove the easy part (whales
+repeating themselves). And it splits cleanly: the **duration** part of that structure
+is **shared by all clans** (a universal tendency), while the **click-pattern** part is
+a **clan-specific dialect**. The effect is real but modest — it makes the next call
+*more predictable*, not a "grammar" in any rich, meaning-carrying sense.
 
 The rest of this write-up explains what we measured, why the method is trustworthy,
 and where the honest limits are.
@@ -69,6 +71,23 @@ outlier. (A methods check, `ec1_pacified.py`, shows exactly that: measured with 
 native single-whale data EC1 looks far ahead, but on the uniform pipeline its rhythm
 advantage shrinks into the Pacific band and its tempo lead roughly halves.)
 
+## Is that structure shared across clans? — only for tempo
+
+The within-clan result says order matters *inside* each clan — but is it the *same*
+rule everywhere, or does each clan have its own? "Coda + clan predicts the next" is not
+the same as "coda predicts the next regardless of clan." The clean test is
+**leave-one-clan-out**: train one model on 7 clans, then ask it to predict the 8th clan
+it has *never seen*, scored against that clan's own base rates — so the current coda
+earns no credit merely for revealing which clan you are in.
+
+**Tempo passes.** A model blind to the clan still predicts its duration transitions, in
+**all 8** held-out clans (+0.31 bits on average, repeats removed). Duration-drift is a
+**universal** tendency — plausibly a shared physiological/motor constraint rather than a
+learned convention. **Rhythm fails.** The foreign model predicts a new clan's rhythm
+*worse* than its base rates (positive in only 1 of 8). So the click-pattern grammar is a
+**clan-specific dialect**. (Figure `3_shared_vs_clan_specific.png`; `python -m
+coda_recovery.universal_structure`.)
+
 ## Do clans share a sequencing "grammar"? — No
 
 With a robust measure in hand, we can finally ask the cross-clan question cleanly:
@@ -80,7 +99,7 @@ predicts B **worse than B's own base rates** (negative transfer, −0.4 to −2.
 another clan. **Procrustes** (aligning the clans' transition-geometries as
 directly as possible) agrees: all clan pairs are far apart. The Caribbean clan is
 the biggest outlier from the Pacific clans, as you'd expect for the most separated
-population. (Figures `3_grammar_is_clan_specific.png`, `4_grammar_geometry.png`;
+population. (Figures `4_grammar_is_clan_specific.png`, `5_grammar_geometry.png`;
 `python -m coda_recovery.clan_similarity`.)
 
 So the picture is consistent and, in hindsight, tidy: **the *what* is partly
@@ -115,10 +134,12 @@ development history is in `PROGRESS.md`.)*
 ## What it means
 
 Mostly, a coda's identity lives in **how it sounds** and **how often it's used**.
-On top of that, there is **genuine, universal, but modest sequential structure**:
-the current coda shifts the odds on the next one — through heavy repetition, and,
-underneath that, real "this tends to follow that" structure in both rhythm and
-tempo, within every clan. This is *predictable order* — not "whale grammar" in a
+On top of that, there is **genuine but modest sequential structure**: the current
+coda shifts the odds on the next one — through heavy repetition, and, underneath that,
+real "this tends to follow that" structure in both rhythm and tempo within every clan.
+And it splits cleanly: the **tempo** (duration) part is **universal** across clans —
+plausibly a shared physiological tendency — while the **rhythm** part is a
+**clan-specific dialect**. This is *predictable order* — not "whale grammar" in a
 strong, meaning-bearing sense.
 
 As far as the literature shows, the specific question — comparing the *ordering* of
@@ -139,24 +160,26 @@ not been asked before, so even this modest, careful answer is new ground.
   make it an artificial outlier: on the uniform pipeline its rhythm advantage shrinks
   into the Pacific band (0.81 → 0.35 bits) and its tempo lead roughly halves. A methods
   check (`ec1_pacified.py`) documents this; the primary analysis uses only shared data.
-- We keep the scope **deliberately narrow** — only the data both datasets share, and
-  only the two questions above. Richer EC1-only avenues (the between-whale exchange,
-  the expressive ornament/rubato features) are left for a possible later extension.
+- We keep the scope **deliberately narrow** — only the data both datasets share.
+  Richer EC1-only avenues (the between-whale exchange, the expressive ornament/rubato
+  features) are left for a possible later extension.
 
 ## Figures (`figures/plain/`)
 
 Plain-language and colorblind-safe; the palette is validated with the dataviz
 checks (tempo/rhythm categorical pair clears CVD ΔE 22.8 and normal-vision 28.9;
-figures 1 and 4 are one-hue sequential ramps, figure 3 a diverging map with a
+figures 1 and 5 are one-hue sequential ramps, figure 4 a diverging map with a
 neutral zero).
 
 - `1_the_data_model.png` — every coda is a rhythm × a tempo (18 × 5 grid), with
   real counts pooled across the whole study (Caribbean + all 7 Pacific clans).
 - `2_current_predicts_next.png` — **the headline.** In every clan, the current coda
   predicts the next beyond frequency *and* repetition (both dials, all 8 clans).
-- `3_grammar_is_clan_specific.png` — clan×clan grammar transfer: only the diagonal
+- `3_shared_vs_clan_specific.png` — leave-one-clan-out: tempo's rule transfers to a
+  clan the model never saw (universal); rhythm's does not (clan-specific dialect).
+- `4_grammar_is_clan_specific.png` — clan×clan grammar transfer: only the diagonal
   (a clan predicting itself) is positive; every cross-clan pair is negative.
-- `4_grammar_geometry.png` — geometry of clan grammars (Procrustes distance,
+- `5_grammar_geometry.png` — geometry of clan grammars (Procrustes distance,
   symmetric); all clans distinct, Caribbean the outlier.
 
 ## Reproduce
@@ -167,6 +190,7 @@ bash data/fetch_sharma.sh                 # fetch + de-pickle the Caribbean (EC1
 bash data/fetch_phase2.sh                 # fetch the 7 Pacific clans (Hersh)
 export PYTHONPATH=src
 python -m coda_recovery.predictive_info_sweep   # within-clan MI, all 8 clans (uniform)
+python -m coda_recovery.universal_structure     # shared vs clan-specific (leave-one-out)
 python -m coda_recovery.clan_similarity         # cross-clan grammar comparison
 python -m coda_recovery.ec1_pacified            # methods check: native EC1 vs uniform
 python -m coda_recovery.plain_figures           # figures 1, 2

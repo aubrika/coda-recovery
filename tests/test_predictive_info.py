@@ -32,3 +32,27 @@ def test_independent_next_is_not_predicted():
     pairs = _pairs(lambda a, rng: int(rng.integers(0, 5)))
     (mt, ml, mh), _, n, V = held_out_mi(pairs)
     assert mh < 0.2, f"total MI upper bound should be near 0, got {mh}"
+
+
+def test_loco_rewards_shared_rule_and_punishes_clan_specific():
+    """A rule shared across clans transfers to a held-out clan (positive);
+    a per-clan-scrambled rule does not (a foreign model mispredicts)."""
+    from coda_recovery.universal_structure import loco_gain
+
+    def build(rule):  # rule(clan, a, rng) -> next token; clans "c0".."c3"
+        rng = np.random.default_rng(1)
+        pairs = {}
+        for k in range(4):
+            c = f"c{k}"
+            pr = []
+            for u in range(8):
+                for _ in range(120):
+                    a = int(rng.integers(0, 5))
+                    pr.append((f"{c}:u{u}", a, rule(k, a, rng)))
+            pairs[c] = pr
+        return pairs
+
+    shared = build(lambda k, a, rng: (a + 1) % 5)          # same rule in every clan
+    specific = build(lambda k, a, rng: (a + 1 + k) % 5)    # each clan shifts differently
+    assert loco_gain("c0", shared, transition_only=True) > 0.3
+    assert loco_gain("c0", specific, transition_only=True) < 0

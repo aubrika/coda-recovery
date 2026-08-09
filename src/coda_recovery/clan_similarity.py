@@ -47,9 +47,7 @@ def get_pairs():
     return {clan: pooled_pairs(clan_frame(clan, tempo="global"), tok) for clan in ALL_CLANS}
 
 
-def cross_prediction(pairs, transition_only=False):
-    if transition_only:                          # keep only "changes" (current != next)
-        pairs = {c: [(u, a, b) for (u, a, b) in pr if a != b] for c, pr in pairs.items()}
+def cross_prediction(pairs):
     clans = CLAN_ORDER
     vocab = set()
     for pr in pairs.values():
@@ -151,7 +149,6 @@ def main():
     print("clan pairs:", {c: len(p) for c, p in pairs.items()})
 
     T = cross_prediction(pairs)
-    Tns = cross_prediction(pairs, transition_only=True)   # repeats removed (changes only)
     print("\nCROSS-PREDICTION transfer[A->B] (bits/coda; diagonal = within-clan MI):")
     print("        " + "".join(f"{c:>7}" for c in CLAN_ORDER))
     for i, A in enumerate(CLAN_ORDER):
@@ -177,8 +174,6 @@ def main():
         for i, A in enumerate(CLAN_ORDER):
             w.writerow(["cross_prediction_bits", A] + [round(T[i, j], 4) for j in range(len(CLAN_ORDER))])
         for i, A in enumerate(CLAN_ORDER):
-            w.writerow(["cross_prediction_nonself_bits", A] + [round(Tns[i, j], 4) for j in range(len(CLAN_ORDER))])
-        for i, A in enumerate(CLAN_ORDER):
             w.writerow(["procrustes_distance", A] + [round(D[i, j], 4) for j in range(len(CLAN_ORDER))])
 
     from matplotlib.colors import TwoSlopeNorm
@@ -197,14 +192,7 @@ def main():
              "are the two clans' unit-normalized (rhythm,tempo) transition embeddings "
              "(0 = the two clans' transition patterns are identical; larger = more different).",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
-    # figure 4, repeats removed: same cell computed on "changes" only (current != next)
-    tnorm_ns = TwoSlopeNorm(vmin=float(np.nanmin(Tns)), vcenter=0.0, vmax=float(np.nanmax(Tns)))
-    _heatmap(Tns, "Same as figure 4, but on 'changes' only — repetition removed",
-             "Each cell = the figure-4 value computed only on codas that CHANGE (current ≠ next), so "
-             "the easy self-repeats are stripped out. Off-diagonal stays cool — no clan's sequencing "
-             "transfers to another; the diagonal shows which clans keep genuine within-clan structure.",
-             "6_cross_prediction_changes_only.png", "RdBu_r", norm=tnorm_ns)
-    print("\nwrote results/clan_similarity.csv, figures plain/4, plain/5 & plain/6")
+    print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 
 
 if __name__ == "__main__":

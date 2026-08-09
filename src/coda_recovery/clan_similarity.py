@@ -131,7 +131,8 @@ def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None,
             ax.text(j, i, fmt.format(v), ha="center", va="center", fontsize=8,
                     color="white" if lum < 0.5 else "#222")
     if sub:
-        sub = textwrap.fill(sub, width=74)
+        if "$" not in sub:                       # math subtitles arrive pre-wrapped
+            sub = textwrap.fill(sub, width=74)    # (textwrap would split $...$ spans)
         ax.set_title(title, loc="left", fontweight="bold", pad=16 + 13 * (sub.count("\n") + 1),
                      color="#222")
         ax.annotate(sub, xy=(0, 1), xytext=(0, 8), xycoords="axes fraction",
@@ -180,16 +181,17 @@ def main():
     # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
     tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
     _heatmap(T, "Does one clan's grammar predict another's next coda?",
-             "Each cell (bits/coda): clan A's model of what-follows-what, applied to clan B's codas "
-             "and scored against B's own frequencies — the average of "
-             "log2 P_A(next│current) − log2 P_B(next).",
+             "Each cell (bits/coda) = average over clan B's codas of\n"
+             r"$\log_{2}\,P_A(\mathrm{next}\mid\mathrm{current})\;-\;\log_{2}\,P_B(\mathrm{next})$,"
+             "\n"
+             r"where $P_A$ = clan A's transition probability and $P_B$ = clan B's base rate.",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",
              "Each cell = Procrustes distance: the smallest ‖A·R − B‖ over rotations R, where A and B "
              "are the two clans' unit-normalized (rhythm,tempo) transition embeddings (0 = identical).",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
-    print("\nwrote results/clan_similarity.csv, figures plain/4 figures plain/3 & plain/4 plain/5")
+    print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 
 
 if __name__ == "__main__":

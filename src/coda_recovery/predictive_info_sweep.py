@@ -26,7 +26,7 @@ import numpy as np
 
 from .predictive_info import _gain, single_whale_sequences, NREP
 from .coda_model import load
-from .factored_by_clan import prep_clan, load_templates
+from .factored import prep_clan, load_templates
 from .hersh import load_hersh, CLANS
 
 REPO = Path(__file__).resolve().parents[2]

@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 
 from .coda_model import load, TEMPO_EDGES
-from .factored_by_clan import assign_rhythm, load_templates
+from .factored import assign_rhythm, load_templates
 from .hersh import load_hersh, CLANS
 
 REPO = Path(__file__).resolve().parents[2]

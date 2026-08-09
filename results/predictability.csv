@@ -1,4 +1,0 @@
-mode,n_tokens,top_token_share,marginal,persistence,bigram,bigram_minus_marginal,gain_std,nonrepeat_frac,nonrepeat_baserate,nonrepeat_sourceaware,nonrepeat_gain
-rhythm,18,0.64,0.673,0.806,0.819,0.145,0.035,0.194,0.386,0.537,0.151
-tempo,5,0.415,0.402,0.851,0.851,0.448,0.041,0.149,0.29,0.545,0.256
-joint,64,0.352,0.351,0.742,0.749,0.397,0.035,0.258,0.135,0.395,0.259

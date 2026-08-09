@@ -30,7 +30,7 @@ from scipy.linalg import orthogonal_procrustes
 
 from .coda_model import load as load_ec1, TEMPO_EDGES
 from .predictive_info import single_whale_sequences, ALPHA
-from .factored_by_clan import assign_rhythm, load_templates
+from .factored import assign_rhythm, load_templates
 from .hersh import load_hersh, CLANS
 
 REPO = Path(__file__).resolve().parents[2]

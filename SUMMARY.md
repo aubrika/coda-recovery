@@ -65,7 +65,7 @@ Every value is comfortably above zero. A lot of the "all" column is simple
 **repetition** (whales repeat a coda ~75–85% of the time — legitimate
 order-dependence, but the easy kind). The striking part is the **repeats-removed**
 column: even when a whale *changes* coda, the current one predicts *where it goes*,
-beyond base rates — in tempo, rhythm, and jointly. (Figure `9_predictive_information.png`.)
+beyond base rates — in tempo, rhythm, and jointly. (Figure `2_current_predicts_next.png`.)
 
 **This is universal across clans.** Running the same test inside each of the 7
 Pacific clans, **every clan** shows positive predictive information in tempo and
@@ -94,7 +94,7 @@ predicts B **worse than B's own base rates** (negative transfer, −0.4 to −2.
 another clan. **Procrustes** (aligning the clans' transition-geometries as
 directly as possible) agrees: all clan pairs are far apart. The Caribbean clan is
 the biggest outlier from the Pacific clans, as you'd expect for the most separated
-population. (Figures `10_clan_cross_prediction.png`, `11_clan_procrustes.png`;
+population. (Figures `4_grammar_is_clan_specific.png`, `5_grammar_geometry.png`;
 `python -m coda_recovery.clan_similarity`.)
 
 So the picture is consistent and, in hindsight, tidy: **the *what* is partly
@@ -115,43 +115,16 @@ It is easy to conflate two very different questions:
 
 Prediction is *easy* here (75–85% next-coda accuracy, mostly from repetition plus a
 few dominant codas — the MI above quantifies exactly the part beyond base rates).
-Identification is *much harder*, and trying to do it directly is what sent us down
-a long wrong path (next section). The two are genuinely different: an English
-speaker can predict that "the" is followed by a noun, but if you erased every word
-and showed only "which blob follows which," you'd struggle to point to "the" —
-because *many* words precede nouns. **Predictable is not the same as identifiable.**
+Identification is *much harder*. The two are genuinely different: an English speaker
+can predict that "the" is followed by a noun, but if you erased every word and
+showed only "which blob follows which," you'd struggle to point to "the" — because
+*many* words precede nouns. **Predictable is not the same as identifiable.**
 
-## The methods lesson (why the earlier results flip-flopped)
-
-For most of this project we asked the *identification* question with a tool called
-**QAP** (quadratic assignment): split the data, hide the labels, and try to
-re-match the two halves' calls by aligning their who-follows-whom tables. It kept
-producing fragile, contradictory answers — a signal that appeared, then vanished
-under a stricter control, then *flipped sign* depending on an arbitrary choice
-(how locally we scrambled the data). Two things were wrong, and both are
-instructive:
-
-- **Diagonal dominance.** Whales repeat so much that the who-follows-whom table is
-  dominated by its diagonal (self-repeats). Table-alignment (QAP) chokes on that —
-  it can even score a frequency-clean *scramble* as a better match than the real
-  data. The metric was measuring its own artefact.
-- **Scramble scale.** The identification test needs a "what if order didn't matter"
-  scramble, and the answer depended on whether we scrambled within tiny exchanges
-  or across whole recordings. There was no principled choice.
-
-The mutual-information test has *neither* problem: it never aligns tables (so
-diagonal dominance is irrelevant) and it never scrambles (the frequency model is
-the baseline). When we finally asked the question this way, the structure that QAP
-kept losing was there all along — clean, positive, and reproducible. **The finding
-was never fragile; the earlier tool was.** (The full, unflattering history —
-including two null-construction bugs and a flawed cross-dataset comparison a
-reviewer caught — is in `PROGRESS.md`.)
-
-A related check settled a fair worry: is the (rhythm,tempo) recoding a *regression*
-from the classic 21 types? No — on the same data the 21-type labels re-identify no
-better, and the (rhythm,tempo) grid is actually a *finer* partition (a single type
-like `1+1+3` spans several tempo cells), so it asks a harder question, not a lossy
-one (`compare_codifications.py`).
+*(An earlier version of this project asked the identification question directly,
+with QAP graph-matching. It proved the wrong tool for repetition-heavy data — the
+who-follows-whom table is dominated by self-repeats, which alignment handles
+unreliably — and was retired in favour of the mutual-information test above. The
+development history is in `PROGRESS.md`.)*
 
 ## An additive check: do ornament and rubato add anything? — barely
 
@@ -167,7 +140,7 @@ classical (rhythm,tempo) description already captures the identity-predictive pa
 of the sequencing. The features do have a little structure of their *own*: the next
 call's ornament is **not** predictable from the current call (−0.01), but its
 **rubato direction is** (+0.13 bits) — the duration drift is sustained across a run,
-exactly as the paper reports. (Figure `12_expressive_features.png`; `python -m
+exactly as the paper reports. (Figure `6_expressive_adds_little.png`; `python -m
 coda_recovery.expressive`. Caveat: ornament and rubato are *context* features
 defined via neighbours, so even these small numbers are partly neighbourhood-
 encoding, not purely new structure.)
@@ -230,10 +203,6 @@ neutral zero).
 - `6_expressive_adds_little.png` — ornament and rubato add almost nothing on top of
   (rhythm, tempo).
 
-The earlier QAP-era figures (re-identification ladder, per-clan syntax, factored
-recovery) have been removed; that detour survives as the narrative record in this
-document and in `PROGRESS.md`, not as figures.
-
 ## Reproduce
 
 ```bash
@@ -242,8 +211,9 @@ bash data/fetch_sharma.sh                 # fetch + de-pickle the factored data
 export PYTHONPATH=src
 python -m coda_recovery.predictive_info        # the clean within-clan MI result
 python -m coda_recovery.predictive_info_sweep   # between-whale + all Pacific clans
-python -m coda_recovery.compare_codifications   # 'is the data model a regression?' (no)
-pytest                                          # QAP-vs-bruteforce + controls, still green
+python -m coda_recovery.clan_similarity         # cross-clan grammar comparison
+python -m coda_recovery.ec1_pacified            # EC1 under the uniform pipeline
+pytest                                          # MI-core sanity tests
 ```
 
 A detailed, expert-facing method section follows.

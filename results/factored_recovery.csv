@@ -1,9 +1,0 @@
-cut,diff_hi,diff_lo,experiment,factored_hi,factored_lo,factored_paired_diff,joint_hi,joint_lo,joint_paired_diff,k,paired_diff,real,shuffled,survives,trans_per_cell
-full,0.2933,0.0267,tempo,,,,,,,5,0.16,0.7333,0.5733,True,57.18
-syntax,0.2,-0.0267,tempo,,,,,,,5,0.08,0.8267,0.7467,False,57.18
-full,-0.0133,-0.18,rhythm,,,,,,,10,-0.0967,0.5633,0.66,False,13.58
-syntax,0.0333,-0.1367,rhythm,,,,,,,10,-0.0533,0.42,0.4733,False,13.58
-full,-0.0111,-0.2444,joint,,,,,,,15,-0.1311,0.3689,0.5,False,5.6
-syntax,0.1578,-0.0467,joint,,,,,,,15,0.0533,0.7022,0.6489,False,5.6
-full,,,factored(4x5),0.0,0.0,0.0,0.11,-0.1075,-0.0025,20,,,,,3.16
-syntax,,,factored(4x5),0.0,0.0,0.0,0.1175,0.005,0.0625,20,,,,,3.16

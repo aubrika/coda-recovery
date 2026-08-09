@@ -112,24 +112,14 @@ neutral zero.
 - **Nothing about meaning.** Only that order is *structured*, not what any coda
   "means" — no translation, no dictionary.
 - **Prediction is not identification.** Guessing the next coda is easy (75–85%,
-  mostly repetition). Working out *which coda is which* from position alone is much
-  harder — and trying to do that directly is what sent an earlier version of this
-  project down a long wrong path (see below).
+  mostly repetition). Working out *which coda is which* from sequence position alone
+  is a much harder, different question we don't tackle here.
 - **The between-whale result rests on little data** (~480 turn-taking pairs); tempo
   there is solid, the other dials underpowered.
 
-## An earlier approach we retired (the honest part)
-
-For most of this project we asked the *identification* question with a graph-matching
-method called **QAP**. It kept producing fragile, contradictory answers — a signal
-that appeared, then vanished under a stricter control, then flipped sign depending
-on an arbitrary choice. The cause was diagnosable (whales repeat so much that the
-who-follows-whom table is dominated by its diagonal, which graph-matching handles
-unreliably), and the mutual-information test above has neither problem. **The
-finding was never fragile; the earlier tool was.** The full, unflattering history —
-including two null-construction bugs and a flawed cross-dataset comparison a
-reviewer caught — is in [`PROGRESS.md`](PROGRESS.md); the methods lesson is in
-[`SUMMARY.md`](SUMMARY.md).
+*(An earlier version asked the identification question with QAP graph-matching; it
+proved the wrong tool for repetition-heavy data and was retired in favour of the
+mutual-information test above. See [`PROGRESS.md`](PROGRESS.md) for that history.)*
 
 ## Data & the caveats it forced
 
@@ -144,7 +134,7 @@ Two sperm-whale sources, no other species:
 Sharma's factored data is distributed as Python **pickles**; we de-pickle it once
 into a plain CSV so nothing in the analysis pipeline ever unpickles. Provenance and
 licences are in [`data/raw/PROVENANCE.md`](data/raw/PROVENANCE.md); unlicensed raw
-data is **fetched, not redistributed** (only the CC0 Gero data is committed).
+data is **fetched, not redistributed**.
 
 ## Reproduce
 
@@ -157,9 +147,9 @@ python -m coda_recovery.predictive_info          # within-clan MI (the clean res
 python -m coda_recovery.predictive_info_sweep    # between-whale + all 7 Pacific clans
 python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 4, 5)
 python -m coda_recovery.expressive               # do ornament/rubato add anything? (fig 6)
-python -m coda_recovery.compare_codifications    # 'is the (rhythm,tempo) recoding a regression?' (no)
+python -m coda_recovery.ec1_pacified             # EC1 under the uniform pipeline
 python -m coda_recovery.plain_figures            # figures 1, 2, 3, 6
-pytest                                           # controls + QAP-vs-bruteforce, still green
+pytest                                           # MI-core sanity tests
 ```
 
 Results append to `results/`; provenance and inventory are committed for audit.

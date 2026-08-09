@@ -27,7 +27,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .factored_by_clan import assign_rhythm, load_templates, ICI_COLS
+from .factored import assign_rhythm, load_templates, ICI_COLS
 from .predictive_info_sweep import held_out_mi, _tf
 from .hersh import CLANS
 

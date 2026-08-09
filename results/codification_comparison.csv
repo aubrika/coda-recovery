@@ -1,5 +1,0 @@
-token,k,trans_per_cell,real,shuffled,paired_diff,diff_lo,diff_hi,survives
-legacy 21-type,15,6.1,0.757,0.709,0.048,-0.04,0.133,False
-"joint (rhy,tmp)",15,5.6,0.36,0.496,-0.136,-0.24,-0.021,False
-rhythm,10,13.6,0.588,0.68,-0.092,-0.2,0.012,False
-tempo,5,57.2,0.776,0.616,0.16,0.0,0.32,False

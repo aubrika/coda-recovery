@@ -1,13 +1,7 @@
 dataset,mode,token,pairs,mi_total,total_lo,total_hi,mi_transition,trans_lo,trans_hi,total_pos,transition_pos
-EC1,within,tempo,2859,1.379,1.344,1.416,0.784,0.751,0.82,True,True
-EC1,within,rhythm,2859,0.805,0.762,0.847,0.666,0.629,0.704,True,True
-EC1,within,joint,2859,1.74,1.682,1.797,0.735,0.651,0.824,True,True
-EC1,between,tempo,480,0.519,0.448,0.589,0.504,0.458,0.554,True,True
-EC1,between,rhythm,480,-0.021,-0.064,0.025,0.099,0.042,0.149,False,True
-EC1,between,joint,480,0.09,-0.025,0.201,-0.181,-0.266,-0.09,False,False
-EC1,pooled,tempo,559,0.581,0.51,0.651,0.516,0.466,0.569,True,True
-EC1,pooled,rhythm,559,0.101,0.048,0.154,0.146,0.105,0.184,True,True
-EC1,pooled,joint,559,0.224,0.117,0.326,-0.112,-0.19,-0.028,True,False
+EC1,within,tempo,3456,0.922,0.891,0.951,0.996,0.956,1.035,True,True
+EC1,within,rhythm,3456,0.354,0.329,0.378,0.469,0.448,0.491,True,True
+EC1,within,joint,3456,0.993,0.946,1.035,0.754,0.702,0.801,True,True
 PAC:REG,within,tempo,7348,0.463,0.409,0.516,0.531,0.496,0.566,True,True
 PAC:REG,within,rhythm,7348,0.293,0.234,0.355,0.252,0.24,0.265,True,True
 PAC:REG,within,joint,7348,0.532,0.468,0.595,0.308,0.259,0.356,True,True
@@ -29,3 +23,6 @@ PAC:RI,within,joint,1220,0.181,0.126,0.239,-0.108,-0.166,-0.045,True,False
 PAC:SI,within,tempo,1112,0.412,0.378,0.448,0.609,0.574,0.644,True,True
 PAC:SI,within,rhythm,1112,0.414,0.369,0.46,0.394,0.337,0.45,True,True
 PAC:SI,within,joint,1112,0.33,0.285,0.376,0.165,0.097,0.23,True,True
+EC1,between,tempo,480,0.519,0.448,0.589,0.504,0.458,0.554,True,True
+EC1,between,rhythm,480,-0.021,-0.064,0.025,0.099,0.042,0.149,False,True
+EC1,between,joint,480,0.09,-0.025,0.201,-0.181,-0.266,-0.09,False,False

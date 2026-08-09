@@ -1,23 +1,19 @@
-"""Send EC1 through the *Pacific* pipeline — treat the richer Caribbean data exactly
-like the Hersh clans, to see how much of EC1's large predictive signal is real
-structure vs an artefact of measuring it more cleanly than the others.
+"""Why we standardized: EC1 native (richer) vs EC1 through the uniform pipeline.
 
-EC1 is normally measured three ways the Pacific clans are NOT:
-  (a) the paper's native rhythm/tempo labels (Pacific: derived — nearest template,
-      quantile tempo);
-  (b) single-whale sequences via known speakers + real onset times (Pacific: pooled
-      within-recording order, speakers mixed, no times);
-  (c) it drops the 59% unattributed codas (Pacific: keeps everything, no speaker IDs).
+EC1 used to be measured more cleanly than the Pacific clans — the paper's native
+rhythm/tempo labels and true single-whale sequences (known speakers, real onset
+times). That made it look like a large outlier. This script puts EC1 through the
+*same* `standardize` pipeline everyone else gets (nearest-template rhythm, quantile
+tempo, pooled within-recording pairs) and prints the two side by side, against the
+Pacific band, so the size of the measurement effect is on the record.
 
-Here we HANDICAP EC1 to the Pacific treatment on all three:
-  rhythm = nearest EC1 template (assign_rhythm), tempo = 5 duration quantiles (qcut),
-  pairs  = adjacent codas within a recording (REC), speakers POOLED, all codas kept.
-Then we measure the same held-out MI and compare to EC1-native and the Pacific band.
+Finding: EC1's rhythm advantage largely collapses into the Pacific band under the
+uniform pipeline; its tempo stays comparatively high (a residual confounded by
+pooled between-whale matching + balanced tempo bins). Hence the project now reports
+the uniform-pipeline numbers as primary (`predictive_info_sweep.py`), with the native
+single-whale view kept only as a labelled supplement (`predictive_info.py`).
 
-If EC1's advantage largely survives the handicap -> candidate clan biology.
-If it collapses into the Pacific range -> the advantage was measurement, not clan.
-
-Run:  python -m coda_recovery.ec1_pacified
+Run (after predictive_info_sweep):  python -m coda_recovery.ec1_pacified
 """
 from __future__ import annotations
 
@@ -27,78 +23,57 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .factored import assign_rhythm, load_templates, ICI_COLS
-from .predictive_info_sweep import held_out_mi, _tf
-from .hersh import CLANS
+from .coda_model import load
+from .predictive_info import evaluate, single_whale_sequences
+from .predictive_info_sweep import held_out_mi
+from .standardize import clan_frame, pooled_pairs, token_fn, ALL_CLANS
 
 REPO = Path(__file__).resolve().parents[2]
-RAW = REPO / "data" / "raw" / "sharma" / "sperm-whale-dialogues.csv"
 SWEEP = REPO / "results" / "predictive_info_sweep.csv"
 OUT = REPO / "results" / "ec1_pacified.csv"
+TOKENS = ("tempo", "rhythm", "joint")
 
 
-def load_ec1_raw() -> pd.DataFrame:
-    """Raw Sharma Dataset 2 with the columns the Pacific pipeline expects."""
-    df = pd.read_csv(RAW)
-    df = df[df["nClicks"] <= 10].copy()                 # same >10-click drop as the main set
-    df = df.rename(columns={"REC": "grpvar", "nClicks": "nclicks",
-                            "Duration": "duration", "Whale": "speaker", "TsTo": "t_start"})
-    for c in ICI_COLS:                                   # pad ICI29/30 (unused for nclicks<=10)
-        if c not in df.columns:
-            df[c] = 0.0
-    return df
+def native_ec1():
+    """EC1 within-clan MI on the native single-whale pipeline (total & transition)."""
+    seqs = single_whale_sequences(load())
+    deps = np.array(sorted({d for d, _ in seqs}), dtype=object)
+    return {t: evaluate(t, seqs, deps) for t in TOKENS}
 
 
-def pacify(df: pd.DataFrame) -> pd.DataFrame:
-    """The prep_clan transform, applied to EC1: derived rhythm + quantile tempo."""
-    df = df.copy()
-    df["rhythm"] = assign_rhythm(df, load_templates())
-    df["tempo"] = pd.qcut(df["duration"], 5, labels=False, duplicates="drop")
-    return df[(df["rhythm"] >= 0) & df["tempo"].notna()]
-
-
-def pacific_style_pairs(df: pd.DataFrame, tf):
-    """Adjacent codas within a recording, ordered by onset, speakers POOLED — the
-    Pacific within-repertoire construction (no speaker filter, no time gate)."""
-    out = []
-    for rec, g in df.sort_values(["grpvar", "t_start"]).groupby("grpvar"):
-        rows = list(g.itertuples())
-        for a, b in zip(rows, rows[1:]):
-            out.append((rec, tf(a), tf(b)))
+def standardized_ec1():
+    """EC1 within-clan MI on the uniform pipeline (identical to the sweep's EC1 row)."""
+    frame = clan_frame("EC1", tempo="qcut")
+    out = {}
+    for t in TOKENS:
+        (mt, ml, mh), (tt, tl, th), n, _ = held_out_mi(pooled_pairs(frame, token_fn(t)))
+        out[t] = {"mi_total": mt, "mi_transition": tt, "pairs": n}
     return out
 
 
 def main():
-    df = pacify(load_ec1_raw())
-    print(f"EC1 through the Pacific pipeline: {len(df)} codas, "
-          f"{df.grpvar.nunique()} recordings (speakers pooled)\n")
+    nat, std = native_ec1(), standardized_ec1()
+    pac = pd.read_csv(SWEEP)
+    pac = pac[pac.dataset.isin([f"PAC:{c}" for c in ALL_CLANS[1:]]) & (pac["mode"] == "within")]
 
+    print("EC1: native (richer) vs the uniform pipeline everyone else gets\n")
+    print(f"{'token':<8}{'native total':>14}{'uniform total':>15}"
+          f"{'native trans':>14}{'uniform trans':>15}{'Pacific total band':>22}")
     rows = []
-    print(f"{'token':<8}{'pairs':>7}{'MI total (95% CI)':>26}{'MI transition (95% CI)':>28}")
-    for token in ("tempo", "rhythm", "joint"):
-        pairs = pacific_style_pairs(df, _tf(token))
-        (mt, ml, mh), (tt, tl, th), n, V = held_out_mi(pairs)
-        rows.append({"dataset": "EC1_pacified", "mode": "pacific_pipeline", "token": token,
-                     "pairs": n, "mi_total": round(mt, 3), "total_lo": round(ml, 3),
-                     "total_hi": round(mh, 3), "mi_transition": round(tt, 3),
-                     "trans_lo": round(tl, 3), "trans_hi": round(th, 3),
-                     "total_pos": bool(ml > 0), "transition_pos": bool(tl > 0)})
-        print(f"{token:<8}{n:>7}" + f"{mt:+.3f} [{ml:+.3f},{mh:+.3f}]".rjust(26)
-              + f"{tt:+.3f} [{tl:+.3f},{th:+.3f}]".rjust(28))
+    for t in TOKENS:
+        nt, ntr = nat[t]["gain_bits"], nat[t]["gain_bits_nonself"]
+        st, str_ = std[t]["mi_total"], std[t]["mi_transition"]
+        band = pac[pac.token == t].mi_total
+        print(f"{t:<8}{nt:>+14.2f}{st:>+15.2f}{ntr:>+14.2f}{str_:>+15.2f}"
+              + f"{band.min():+.2f}..{band.max():+.2f}".rjust(22))
+        rows.append({"token": t, "native_total": round(nt, 3), "uniform_total": round(st, 3),
+                     "native_transition": round(ntr, 3), "uniform_transition": round(str_, 3),
+                     "pacific_total_min": round(float(band.min()), 3),
+                     "pacific_total_max": round(float(band.max()), 3)})
 
-    # --- side-by-side comparison against native EC1 and the Pacific band ----------
-    sw = pd.read_csv(SWEEP)
-    ec_within = sw[(sw.dataset == "EC1") & (sw["mode"] == "within")].set_index("token")
-    pac = sw[sw.dataset.isin([f"PAC:{c}" for c in CLANS]) & (sw["mode"] == "within")]
-    print("\n  total MI (bits/coda), by tempo/rhythm/joint:")
-    print(f"    {'EC1 native (single-whale)':<30}"
-          + "  ".join(f"{ec_within.loc[t, 'mi_total']:+.2f}" for t in ("tempo", "rhythm", "joint")))
-    print(f"    {'EC1 PACIFIED (this test)':<30}"
-          + "  ".join(f"{r['mi_total']:+.2f}" for r in rows))
-    print(f"    {'Pacific clans (range)':<30}"
-          + "  ".join(f"{pac[pac.token == t].mi_total.min():+.2f}..{pac[pac.token == t].mi_total.max():+.2f}"
-                      for t in ("tempo", "rhythm", "joint")))
-
+    print("\nUnder the uniform pipeline EC1's rhythm advantage collapses toward the Pacific")
+    print("band; the tempo residual is confounded (pooled matching + balanced bins). The")
+    print("uniform numbers are what the project reports as primary.")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)

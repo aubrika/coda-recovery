@@ -28,41 +28,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.linalg import orthogonal_procrustes
 
-from .coda_model import load as load_ec1, TEMPO_EDGES
-from .predictive_info import single_whale_sequences, ALPHA
-from .factored import assign_rhythm, load_templates
-from .hersh import load_hersh, CLANS
+from .predictive_info import ALPHA
+from .standardize import clan_frame, pooled_pairs, ALL_CLANS
 
 REPO = Path(__file__).resolve().parents[2]
 FIG = REPO / "figures" / "plain"
 OUT = REPO / "results"
-CLAN_ORDER = ["EC1"] + CLANS
+CLAN_ORDER = ALL_CLANS
 NREP = 15
 EMB_K, EMB_D = 15, 5
 
 
 def get_pairs():
-    """clan -> list of (cv_unit, (rhythm,tempo), (rhythm,tempo)) over global tokens."""
-    pairs = {}
-    codas = load_ec1()
-    pairs["EC1"] = [(dep, (a.rhythm, a.tempo), (b.rhythm, b.tempo))
-                    for dep, seq in single_whale_sequences(codas)
-                    for a, b in zip(seq, seq[1:])]
-    templates = load_templates()
-    h = load_hersh()
-    for c in CLANS:
-        sub = h[h.clan_name == c].copy()
-        sub["rhythm"] = assign_rhythm(sub, templates)
-        sub["tempo"] = np.digitize(sub["duration"].to_numpy(), TEMPO_EDGES)  # GLOBAL tempo
-        sub = sub[sub["rhythm"] >= 0]
-        pr = []
-        for grp, g in sub.sort_values(["grpvar", "coda_number"]).groupby("grpvar"):
-            rows = list(g.itertuples())
-            for a, b in zip(rows, rows[1:]):
-                if b.coda_number - a.coda_number <= 1:
-                    pr.append((grp, (a.rhythm, a.tempo), (b.rhythm, b.tempo)))
-        pairs[c] = pr
-    return pairs
+    """clan -> list of (cv_unit, (rhythm,tempo), (rhythm,tempo)) over shared global
+    tokens, every clan through the SAME uniform pipeline (EC1 included — no special
+    native treatment), so cross-clan comparison is apples-to-apples."""
+    tok = lambda r: (int(r.rhythm), int(r.tempo))
+    return {clan: pooled_pairs(clan_frame(clan, tempo="global"), tok) for clan in ALL_CLANS}
 
 
 def cross_prediction(pairs):

@@ -1,4 +1,4 @@
-dataset,mode,token,pairs,mi_total,total_lo,total_hi,mi_transition,trans_lo,trans_hi,total_pos,transition_pos
-EC1_pacified,pacific_pipeline,tempo,3456,0.922,0.891,0.951,0.996,0.956,1.035,True,True
-EC1_pacified,pacific_pipeline,rhythm,3456,0.354,0.329,0.378,0.469,0.448,0.491,True,True
-EC1_pacified,pacific_pipeline,joint,3456,0.993,0.946,1.035,0.754,0.702,0.801,True,True
+token,native_total,uniform_total,native_transition,uniform_transition,pacific_total_min,pacific_total_max
+tempo,1.403,0.922,0.805,0.996,0.157,0.463
+rhythm,0.871,0.354,0.698,0.469,0.086,0.792
+joint,1.796,0.993,0.786,0.754,0.131,0.922

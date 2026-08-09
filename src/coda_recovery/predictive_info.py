@@ -1,8 +1,18 @@
-"""Predictive-information test — a clean replacement for QAP re-identification.
+"""Predictive-information test — EC1 native single-whale SUPPLEMENT.
 
-The original question is "does the previous coda predict the next, beyond
-frequency?" We answer it directly, with no alignment and no shuffle (both of which
-introduced artefacts): a cross-validated likelihood-ratio between a bigram model
+This measures EC1's within-clan predictive information using its *richer* native
+data: the paper's own rhythm/tempo labels and true single-whale sequences (known
+speakers, real onset times, ≤ 8 s apart). That is more precise than the uniform
+cross-clan pipeline but NOT comparable to the Pacific clans, which lack speaker IDs
+— so it is a supplement, not the headline. The primary, apples-to-apples within-clan
+result (EC1 put through the same pipeline as everyone else) is in
+`predictive_info_sweep.py`; `ec1_pacified.py` shows how much the two differ. This
+module also provides the shared MI machinery (`_gain`, `ALPHA`, `NREP`,
+`single_whale_sequences`) used across the project.
+
+The question is "does the previous coda predict the next, beyond frequency?" We
+answer it directly, with no alignment and no shuffle (both of which introduced
+artefacts): a cross-validated likelihood-ratio between a bigram model
 P(next | current) and a unigram model P(next), on held-out data.
 
   gain (bits/coda) = mean over held-out pairs of  log2 P_bi(next|cur) − log2 P_uni(next)

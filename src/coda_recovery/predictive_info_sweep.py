@@ -1,15 +1,20 @@
-"""Predictive-information (mutual-information) sweep — the clean MI test extended
-to the between-whale exchange and to every Pacific clan.
+"""Predictive-information (mutual-information) sweep — held-out MI within every clan,
+plus EC1's between-whale exchange.
 
 MI = mutual information: the held-out bigram-vs-unigram log-likelihood gain is a
 cross-validated estimate of I(current token; next token), in bits/coda. Positive
 (CI clears 0) = the current coda predicts the next beyond frequency.
 
-  EC1 (Sharma Dataset 2, real times + speakers):
-    within  — same whale, consecutive <= 8 s
-    between — different whales, turn-taking (next onset within 2 s after prev end)
-    pooled  — all adjacent-in-time pairs within 2 s
-  Pacific clans (Hersh): within-repertoire (no speaker IDs), rhythm/tempo derived.
+**Uniform pipeline (the primary within-clan result).** All 8 clans — EC1 and the 7
+Pacific clans — go through the *same* `standardize` treatment: nearest-template
+rhythm, per-clan quantile tempo, adjacent within-recording pairs with speakers
+pooled. EC1 is no longer measured more cleanly than the rest, so its numbers are
+directly comparable (see `ec1_pacified.py` for how much this changes EC1).
+
+**EC1 between-whale exchange (a supplement).** EC1's known speakers + real onset
+times allow one extra test the Pacific data can't: transitions *across* speakers
+(one whale's coda -> the other's reply, within the 2 s turn-taking window). Reported
+separately, labelled as EC1-only.
 
 Tokens: tempo, rhythm, joint (rhythm,tempo). Reports total MI and transition-only
 MI (repeats removed).
@@ -24,10 +29,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .predictive_info import _gain, single_whale_sequences, NREP
+from .predictive_info import _gain, NREP
 from .coda_model import load
-from .factored import prep_clan, load_templates
-from .hersh import load_hersh, CLANS
+from .standardize import clan_frame, pooled_pairs, token_fn, ALL_CLANS
 
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "results" / "predictive_info_sweep.csv"
@@ -65,14 +69,9 @@ def held_out_mi(all_pairs):
     return _ci(ga, rng), _ci(gt, rng), len(all_pairs), len(vocab)
 
 
-# ---- pair generators -> (cv_unit, tok_a, tok_b) --------------------------
-
-def ec1_within(codas, tf):
-    return [(dep, tf(a), tf(b)) for dep, seq in single_whale_sequences(codas)
-            for a, b in zip(seq, seq[1:])]
-
-
-def ec1_time_adjacent(codas, tf, between_only):
+def ec1_between(codas, tf):
+    """EC1-only supplement: turn-taking pairs (different speakers, next onset 0-2 s
+    after the previous coda's termination)."""
     out = []
     by = defaultdict(list)
     for c in codas:
@@ -81,21 +80,8 @@ def ec1_time_adjacent(codas, tf, between_only):
         cs = sorted(cs, key=lambda c: c.t_start)
         for a, b in zip(cs, cs[1:]):
             gap = b.t_start - (a.t_start + a.duration)
-            if not (0 <= gap <= 2):
-                continue
-            if between_only and a.speaker == b.speaker:
-                continue
-            out.append((dep, tf(a), tf(b)))
-    return out
-
-
-def pacific_within(sub, tf):
-    out = []
-    for grp, g in sub.sort_values(["grpvar", "coda_number"]).groupby("grpvar"):
-        rows = list(g.itertuples())
-        for a, b in zip(rows, rows[1:]):
-            if b.coda_number - a.coda_number <= 1:
-                out.append((grp, tf(a), tf(b)))
+            if 0 <= gap <= 2 and a.speaker != b.speaker:
+                out.append((dep, tf(a), tf(b)))
     return out
 
 
@@ -115,23 +101,19 @@ def main():
               + f"{mt:+.3f} [{ml:+.3f},{mh:+.3f}]".rjust(24)
               + (f"{tt:+.3f} [{tl:+.3f},{th:+.3f}]".rjust(26) if np.isfinite(tt) else "  —".rjust(26)))
 
-    codas = load()
-    print("--- EC1 (Dataset 2) ---")
-    for mode, gen in [("within", lambda tf: ec1_within(codas, tf)),
-                      ("between", lambda tf: ec1_time_adjacent(codas, tf, True)),
-                      ("pooled", lambda tf: ec1_time_adjacent(codas, tf, False))]:
+    print("--- Within clan (UNIFORM pipeline — all 8 clans treated identically) ---")
+    for clan in ALL_CLANS:
+        label = clan if clan == "EC1" else f"PAC:{clan}"
+        frame = clan_frame(clan, tempo="qcut")
         for token in ("tempo", "rhythm", "joint"):
-            emit("EC1", mode, token, gen(_tf(token)))
+            emit(label, "within", token, pooled_pairs(frame, token_fn(token)))
         print()
 
-    print("--- Pacific clans (within-repertoire) ---")
-    templates = load_templates()
-    h = load_hersh()
-    for clan in CLANS:
-        sub = prep_clan(h[h.clan_name == clan], templates)
-        for token in ("tempo", "rhythm", "joint"):
-            emit(f"PAC:{clan}", "within", token, pacific_within(sub, _tf(token)))
-        print()
+    print("--- EC1 between-whale exchange (supplement — needs speakers + times) ---")
+    codas = load()
+    for token in ("tempo", "rhythm", "joint"):
+        emit("EC1", "between", token, ec1_between(codas, _tf(token)))
+    print()
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:

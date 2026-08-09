@@ -53,13 +53,13 @@ artefact of overfitting.
 
 ## What we found
 
-- **The current coda predicts the next, beyond frequency — in every clan.**
-  Within a single whale's stream (Caribbean clan): tempo **+1.40 bits**, rhythm
-  **+0.87**, both together **+1.80**. Much of that is whales repeating themselves,
-  but even with **repeats removed** the signal survives (tempo +0.81, rhythm +0.70).
-  Running the same test inside all 7 Pacific clans, **every clan** is positive on
-  both dials, repeats removed. Structured sequencing is a general feature, not a
-  quirk of one clan. **(Figure 2.)**
+- **The current coda predicts the next, beyond frequency — in every clan.** All 8
+  clans go through one **uniform pipeline** (no clan measured more cleanly than
+  another). Even with whale self-repeats removed, **every clan is positive on both
+  dials** — tempo +0.3 to +1.0 bits, rhythm +0.07 to +0.47, all clear of zero.
+  Structured sequencing is a general feature, not a quirk of one clan. (EC1's richer
+  data supports a sharper single-whale view — tempo +1.40, rhythm +0.87 — but that's
+  a labelled supplement, not comparable across clans.) **(Figure 2.)**
 
 - **Whales predict each other's reply — but only its duration.** When two whales
   take turns (reply within 2 seconds), the reply's **tempo** is predictable from

@@ -148,7 +148,7 @@ def fig_universal():
             ax.plot(r.mi_transition, yi + dy, "o", color=col, ms=8, zorder=3)
     ax.set_yticks(y); ax.set_yticklabels([CLAN_LABEL[c] for c in clans], fontsize=11)
     ax.set_xlabel("Extra information the current coda carries about the next\n(bits per coda, repeats removed)")
-    ax.set_xlim(-0.05, 0.9)
+    ax.set_xlim(-0.05, 1.12)
     _dress(ax); ax.xaxis.grid(True, color="#eeeeee")
     _titles(ax, "In every clan, the current coda predicts the next — beyond frequency and repetition",
             "Cross-validated extra bits, with whales' self-repeats removed (the conservative test). "

@@ -179,10 +179,14 @@ def main():
     # cross-prediction is diverging around a meaningful zero (positive = shared
     # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
     tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
-    _heatmap(T, "Does one clan's grammar predict another's next coda?", "",
+    _heatmap(T, "Does one clan's grammar predict another's next coda?",
+             "Each cell = bits by which clan A's grammar beats clan B's own base rates at predicting "
+             "B's next coda (warm = shared, cool = worse than chance).",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
-    _heatmap(D, "Each clan's sequencing has its own distinct shape", "",
+    _heatmap(D, "Each clan's sequencing has its own distinct shape",
+             "Each cell = how different two clans' transition patterns are, after best alignment "
+             "(0 = identical, darker = more different).",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 figures plain/3 & plain/4 plain/5")
 

@@ -130,11 +130,14 @@ def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None,
             lum = 0.299 * r + 0.587 * g + 0.114 * b
             ax.text(j, i, fmt.format(v), ha="center", va="center", fontsize=8,
                     color="white" if lum < 0.5 else "#222")
-    sub = textwrap.fill(sub, width=74)
-    ax.set_title(title, loc="left", fontweight="bold", pad=16 + 13 * (sub.count("\n") + 1),
-                 color="#222")
-    ax.annotate(sub, xy=(0, 1), xytext=(0, 8), xycoords="axes fraction",
-                textcoords="offset points", fontsize=10, color="#666", linespacing=1.3)
+    if sub:
+        sub = textwrap.fill(sub, width=74)
+        ax.set_title(title, loc="left", fontweight="bold", pad=16 + 13 * (sub.count("\n") + 1),
+                     color="#222")
+        ax.annotate(sub, xy=(0, 1), xytext=(0, 8), xycoords="axes fraction",
+                    textcoords="offset points", fontsize=10, color="#666", linespacing=1.3)
+    else:
+        ax.set_title(title, loc="left", fontweight="bold", pad=12, color="#222")
     fig.colorbar(im, fraction=0.046, pad=0.04)
     fig.tight_layout(); FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG / fname, dpi=150, bbox_inches="tight"); plt.close(fig)
@@ -176,15 +179,10 @@ def main():
     # cross-prediction is diverging around a meaningful zero (positive = shared
     # grammar, negative = actively mis-predicts): two hues, neutral (white) at 0.
     tnorm = TwoSlopeNorm(vmin=float(np.nanmin(T)), vcenter=0.0, vmax=float(np.nanmax(T)))
-    _heatmap(T, "Does one clan's grammar predict another's next coda? — no",
-             "How well clan A's 'what-follows-what' model predicts clan B's next coda, beyond B's own "
-             "frequencies (bits/coda). Warm = shares grammar; cool = predicts worse than chance. "
-             "Only the diagonal (a clan predicting itself) is warm.",
+    _heatmap(T, "Does one clan's grammar predict another's next coda?", "",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
-    _heatmap(D, "Each clan's sequencing has its own distinct shape",
-             "Distance between clans' (rhythm,tempo) transition patterns after the best possible "
-             "alignment (Procrustes; 0 = identical, darker = more different). Symmetric; every clan pair is far apart.",
+    _heatmap(D, "Each clan's sequencing has its own distinct shape", "",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 figures plain/3 & plain/4 plain/5")
 

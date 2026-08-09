@@ -23,6 +23,3 @@ PAC:RI,within,joint,1220,0.181,0.126,0.239,-0.108,-0.166,-0.045,True,False
 PAC:SI,within,tempo,1112,0.412,0.378,0.448,0.609,0.574,0.644,True,True
 PAC:SI,within,rhythm,1112,0.414,0.369,0.46,0.394,0.337,0.45,True,True
 PAC:SI,within,joint,1112,0.33,0.285,0.376,0.165,0.097,0.23,True,True
-EC1,between,tempo,480,0.519,0.448,0.589,0.504,0.458,0.554,True,True
-EC1,between,rhythm,480,-0.021,-0.064,0.025,0.099,0.042,0.149,False,True
-EC1,between,joint,480,0.09,-0.025,0.201,-0.181,-0.266,-0.09,False,False

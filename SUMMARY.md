@@ -62,31 +62,12 @@ confidence interval clear of zero. Structured sequencing beyond frequency is a
 **general feature**, not a quirk of one clan. (Figure `2_current_predicts_next.png`;
 `python -m coda_recovery.predictive_info_sweep`.)
 
-**EC1's richer data — a supplement.** The Caribbean clan alone has known speakers and
-real onset times, so we can also build *true single-whale* sequences (one animal's
-stream, rather than everything in a recording pooled). Measured that more precise way,
-EC1's within-clan numbers are larger:
-
-| dial (EC1, single-whale supplement) | predictive info (all) | with repeats removed |
-|---|---|---|
-| Tempo (duration) | +1.40 bits | **+0.81 bits** |
-| Rhythm (click pattern) | +0.87 bits | **+0.70 bits** |
-| Both (rhythm+tempo) | +1.80 bits | **+0.79 bits** |
-
-This is a sharper view of EC1 in particular, but it is not comparable to the Pacific
-clans (which have no speaker IDs), so it is a supplement — the uniform numbers above
-are what we compare across clans. Putting EC1 through the *uniform* pipeline shrinks
-its rhythm advantage into the Pacific band and roughly halves its tempo lead (see the
-measurement note under Honest limits, and `ec1_pacified.py`).
-
-**Between whales — the exchange.** Sperm whales chorus and take turns. When we
-build transitions *across* speakers (one whale's coda → the other whale's reply,
-within the 2-second turn-taking window), the predictive structure is real and
-concentrated in **tempo**: +0.52 bits, almost all of it genuine (not just
-matching). In plain terms, **a whale's reply duration is predictable from its
-partner's** — the coda "matching" and duration-drift ("rubato") the paper
-describes. Rhythm and the full type carry little between-whale signal, but those
-tests are data-starved (~480 pairs), so treat their nulls cautiously.
+We deliberately keep to what both datasets share (rhythm, tempo, sequence order),
+rather than lean on EC1's richer extras (known speakers, precise timing) — using them
+would measure the Caribbean clan more finely than the rest and make it an artificial
+outlier. (A methods check, `ec1_pacified.py`, shows exactly that: measured with its
+native single-whale data EC1 looks far ahead, but on the uniform pipeline its rhythm
+advantage shrinks into the Pacific band and its tempo lead roughly halves.)
 
 ## Do clans share a sequencing "grammar"? — No
 
@@ -99,7 +80,7 @@ predicts B **worse than B's own base rates** (negative transfer, −0.4 to −2.
 another clan. **Procrustes** (aligning the clans' transition-geometries as
 directly as possible) agrees: all clan pairs are far apart. The Caribbean clan is
 the biggest outlier from the Pacific clans, as you'd expect for the most separated
-population. (Figures `4_grammar_is_clan_specific.png`, `5_grammar_geometry.png`;
+population. (Figures `3_grammar_is_clan_specific.png`, `4_grammar_geometry.png`;
 `python -m coda_recovery.clan_similarity`.)
 
 So the picture is consistent and, in hindsight, tidy: **the *what* is partly
@@ -131,34 +112,14 @@ who-follows-whom table is dominated by self-repeats, which alignment handles
 unreliably — and was retired in favour of the mutual-information test above. The
 development history is in `PROGRESS.md`.)*
 
-## An additive check: do ornament and rubato add anything? — barely
-
-The paper layers two *expressive* features on top of rhythm and tempo: **ornament**
-(an occasional extra click) and **rubato** (smooth duration drift across a run). We
-kept rhythm+tempo as the "classical coda type" analysis above and asked, as a
-*separate, additive* question, whether these two carry extra predictive information.
-
-They add almost nothing to predicting the **next call's identity**: on top of
-rhythm+tempo, ornament contributes a negligible **+0.01 bits** and rubato actually
-**hurts** (−0.31 — it splinters the predictor without adding signal). So the
-classical (rhythm,tempo) description already captures the identity-predictive part
-of the sequencing. The features do have a little structure of their *own*: the next
-call's ornament is **not** predictable from the current call (−0.01), but its
-**rubato direction is** (+0.13 bits) — the duration drift is sustained across a run,
-exactly as the paper reports. (Figure `6_expressive_adds_little.png`; `python -m
-coda_recovery.expressive`. Caveat: ornament and rubato are *context* features
-defined via neighbours, so even these small numbers are partly neighbourhood-
-encoding, not purely new structure.)
-
 ## What it means
 
 Mostly, a coda's identity lives in **how it sounds** and **how often it's used**.
 On top of that, there is **genuine, universal, but modest sequential structure**:
 the current coda shifts the odds on the next one — through heavy repetition, and,
 underneath that, real "this tends to follow that" structure in both rhythm and
-tempo, within every clan and (for tempo) across the turn-taking exchange between
-whales. This is *predictable order*, consistent with the paper's rubato and coda
-matching — not "whale grammar" in a strong, meaning-bearing sense.
+tempo, within every clan. This is *predictable order* — not "whale grammar" in a
+strong, meaning-bearing sense.
 
 As far as the literature shows, the specific question — comparing the *ordering* of
 coda types, and measuring its information content, within and between clans — has
@@ -170,42 +131,33 @@ not been asked before, so even this modest, careful answer is new ground.
   and reproducible, but not a rich combinatorial language.
 - This says **nothing about meaning** — only that order is *structured*, not what
   any coda "means."
-- The between-whale exchange result rests on **little data** (~480 turn-taking
-  pairs); tempo there is solid, rhythm/joint are underpowered.
-- The rhythm/tempo tokens are **derived** for the primary (uniform) analysis —
-  nearest-template rhythm, quantile-binned tempo — for *every* clan including EC1, so
-  all clans are a faithful approximation on equal footing. The paper's native EC1
-  labels are used only in the single-whale supplement.
-- **EC1's apparent exceptionalism was mostly a measurement effect — now fixed by
-  the uniform pipeline.** EC1 used to be measured more cleanly than the others
-  (native labels; single-whale sequences from known speakers). Put it through the
-  *same* pipeline everyone else gets and its **rhythm** advantage collapses into the
-  Pacific band (total 0.81 → 0.35 bits) and its **tempo** lead roughly halves
-  (1.38 → 0.92). The residual tempo strength is confounded — pooling speakers folds in
-  the between-whale "matching," and balanced tempo bins give more MI headroom — so it
-  is *not* clean evidence of a richer clan grammar. We therefore report the **uniform**
-  numbers as primary (all clans identical) and keep EC1's single-whale view only as a
-  labelled supplement. (`ec1_pacified.py` → `results/ec1_pacified.csv`.)
+- The rhythm/tempo tokens are **derived** for every clan (nearest-template rhythm,
+  quantile-binned tempo) — a faithful approximation on equal footing, not identical
+  measurements.
+- **EC1 gets no special treatment.** Using the Caribbean clan's richer native data
+  (known speakers, precise timing) would measure it more finely than the others and
+  make it an artificial outlier: on the uniform pipeline its rhythm advantage shrinks
+  into the Pacific band (0.81 → 0.35 bits) and its tempo lead roughly halves. A methods
+  check (`ec1_pacified.py`) documents this; the primary analysis uses only shared data.
+- We keep the scope **deliberately narrow** — only the data both datasets share, and
+  only the two questions above. Richer EC1-only avenues (the between-whale exchange,
+  the expressive ornament/rubato features) are left for a possible later extension.
 
 ## Figures (`figures/plain/`)
 
 Plain-language and colorblind-safe; the palette is validated with the dataviz
 checks (tempo/rhythm categorical pair clears CVD ΔE 22.8 and normal-vision 28.9;
-figure 1 and 5 are one-hue sequential ramps, figure 4 a diverging map with a
+figures 1 and 4 are one-hue sequential ramps, figure 3 a diverging map with a
 neutral zero).
 
 - `1_the_data_model.png` — every coda is a rhythm × a tempo (18 × 5 grid), with
   real counts pooled across the whole study (Caribbean + all 7 Pacific clans).
 - `2_current_predicts_next.png` — **the headline.** In every clan, the current coda
   predicts the next beyond frequency *and* repetition (both dials, all 8 clans).
-- `3_between_whale_reply.png` — the turn-taking exchange: only the reply's duration
-  is predictable from the first whale's coda.
-- `4_grammar_is_clan_specific.png` — clan×clan grammar transfer: only the diagonal
+- `3_grammar_is_clan_specific.png` — clan×clan grammar transfer: only the diagonal
   (a clan predicting itself) is positive; every cross-clan pair is negative.
-- `5_grammar_geometry.png` — geometry of clan grammars (Procrustes distance); all
-  clans distinct, Caribbean the outlier.
-- `6_expressive_adds_little.png` — ornament and rubato add almost nothing on top of
-  (rhythm, tempo).
+- `4_grammar_geometry.png` — geometry of clan grammars (Procrustes distance,
+  symmetric); all clans distinct, Caribbean the outlier.
 
 ## Reproduce
 
@@ -214,10 +166,10 @@ python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 bash data/fetch_sharma.sh                 # fetch + de-pickle the Caribbean (EC1) data
 bash data/fetch_phase2.sh                 # fetch the 7 Pacific clans (Hersh)
 export PYTHONPATH=src
-python -m coda_recovery.predictive_info        # the clean within-clan MI result
-python -m coda_recovery.predictive_info_sweep   # between-whale + all Pacific clans
+python -m coda_recovery.predictive_info_sweep   # within-clan MI, all 8 clans (uniform)
 python -m coda_recovery.clan_similarity         # cross-clan grammar comparison
-python -m coda_recovery.ec1_pacified            # EC1 under the uniform pipeline
+python -m coda_recovery.ec1_pacified            # methods check: native EC1 vs uniform
+python -m coda_recovery.plain_figures           # figures 1, 2
 pytest                                          # MI-core sanity tests
 ```
 
@@ -242,10 +194,9 @@ templates; **tempo** = 5 duration bins (per-clan quantiles for the within-clan t
 shared EC1 edges for the cross-clan comparison, where tokens must mean the same
 thing); **pairs** = adjacent codas within one recording, *speakers pooled* (EC1
 ordered by onset, Pacific by coda_number). This deliberately does **not** use EC1's
-native labels or single-whale segmentation — those make EC1 an artificial outlier
-(see Honest limits). EC1's richer data instead powers three labelled **supplements** the Pacific
-data can't support: single-whale within-clan (`predictive_info.py`), the between-whale
-exchange (`predictive_info_sweep.py`), and the expressive features (`expressive.py`).
+native labels or single-whale segmentation — those would make EC1 an artificial
+outlier (see Honest limits); the one place native EC1 is measured is the
+`ec1_pacified.py` methods check that demonstrates exactly that.
 
 ### 3. The measure: held-out predictive information
 The identity token is the (rhythm, tempo) cell; we also test each axis alone. For

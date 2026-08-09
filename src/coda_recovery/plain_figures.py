@@ -1,12 +1,12 @@
 """Plain-language figures for a general audience (no jargon, high-school level).
 
-This module builds the four stand-alone figures of the story; the two cross-clan
-heatmaps (4 = grammar doesn't transfer, 5 = grammar geometry) are built by
-`clan_similarity.py`, which owns the pair-construction. Run both to refresh the
-whole `figures/plain/` set:
+This module builds figures 1 (data model) and 2 (universal within-clan); the two
+cross-clan heatmaps (3 = grammar doesn't transfer, 4 = grammar geometry) are built by
+`clan_similarity.py`, which owns the pair-construction. Run both to refresh the whole
+`figures/plain/` set:
 
-    python -m coda_recovery.plain_figures     # figures 1, 2, 3, 6
-    python -m coda_recovery.clan_similarity    # figures 4, 5
+    python -m coda_recovery.plain_figures     # figures 1, 2
+    python -m coda_recovery.clan_similarity    # figures 3, 4
 
 Color language, used consistently and learned once:
   BLUE   = tempo (duration)  /  a real, positive effect
@@ -165,92 +165,10 @@ def fig_universal():
     plt.close(fig)
 
 
-# ---------------------------------------------------------------- figure 3
-def fig_exchange():
-    """The between-whale exchange: when two whales take turns, only the reply's
-    tempo is predictable from the first whale's coda (the paper's 'coda matching' /
-    duration drift). Reads the EC1 'between' rows of the sweep (total MI)."""
-    d = pd.read_csv(RES / "predictive_info_sweep.csv")
-    d = d[(d.dataset == "EC1") & (d["mode"] == "between")]
-    rows = [("Tempo (duration)", "tempo"), ("Rhythm (click pattern)", "rhythm"),
-            ("Full type (rhythm + tempo)", "joint")]
-    y = np.arange(len(rows))[::-1]
-
-    fig, ax = plt.subplots(figsize=(9, 3.6))
-    ax.axvline(0, color="#444", lw=1.2)
-    for yi, (_, tok) in zip(y, rows):
-        r = d[d.token == tok].iloc[0]
-        c = BLUE if r.total_lo > 0.02 else GREY
-        ax.plot([r.total_lo, r.total_hi], [yi, yi], color=c, lw=3.5, solid_capstyle="round")
-        ax.plot(r.mi_total, yi, "o", color=c, ms=11)
-        ax.annotate(f"{r.mi_total:+.2f}", (r.mi_total, yi), xytext=(0, 10),
-                    textcoords="offset points", ha="center", fontsize=10, color=INK, fontweight="bold")
-    ax.set_yticks(y); ax.set_yticklabels([lab for lab, _ in rows], fontsize=11)
-    ax.set_xlabel("Information the first whale's coda carries about the reply (bits per coda)")
-    ax.set_xlim(-0.2, 0.75)
-    _dress(ax); ax.yaxis.grid(False); ax.xaxis.grid(True, color="#eeeeee")
-    _titles(ax, "Whales predict each other's reply — but only its duration",
-            "When two whales take turns (reply within 2 s), the reply's tempo is predictable from the "
-            "first whale's coda; its rhythm and full type are not. From ~480 turn-taking pairs — read cautiously.")
-    fig.tight_layout()
-    FIG.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIG / "3_between_whale_reply.png", dpi=150, bbox_inches="tight")
-    plt.close(fig)
-
-
-# ---------------------------------------------------------------- figure 6
-def fig_expressive():
-    """Additive: do ornament/rubato add anything on top of (rhythm,tempo)? Barely.
-    Two questions, split by a divider: (top) do they improve prediction of the next
-    call's identity, (bottom) do they have their own sequential structure."""
-    d = pd.read_csv(RES / "expressive.csv")
-    add = d[d.experiment == "predict_next_RT"]
-    items = []
-    for pred, lab in [("ornament", "Ornament → next call's identity"),
-                      ("rubato", "Rubato → next call's identity"),
-                      ("ornament_+_rubato", "Both → next call's identity")]:
-        r = add[add.predictor == pred].iloc[0]
-        items.append((lab, float(r["gain"]), float(r["gain_lo"]), float(r["gain_hi"])))
-    for exp, lab in [("predict_next_ornament", "Is the next call's ornament predictable?"),
-                     ("predict_next_rubato", "Is the next call's rubato predictable?")]:
-        r = d[(d.experiment == exp) & (d.predictor == "RT")].iloc[0]
-        items.append((lab, float(r["mi"]), float(r["mi_lo"]), float(r["mi_hi"])))
-    labels, val, lo, hi = zip(*[(a, b, c, e) for a, b, c, e in items])
-    y = np.arange(len(items))[::-1]
-
-    fig, ax = plt.subplots(figsize=(9.2, 4.8))
-    ax.axvline(0, color="#444", lw=1.2)
-    ax.axhline(2.5, color="#dddddd", lw=1, ls="--")     # divider between the two questions
-    for yi, v, l, h in zip(y, val, lo, hi):
-        c = BLUE if l > 0.02 else GREY
-        ax.plot([l, h], [yi, yi], color=c, lw=3, solid_capstyle="round")
-        ax.plot(v, yi, "o", color=c, ms=9)
-        ax.annotate(f"{v:+.2f}", (v, yi), xytext=(0, 9), textcoords="offset points",
-                    ha="center", fontsize=9.5, color=INK)
-    ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=10.5)
-    ax.set_xlabel("Extra predictive information (bits per coda)")
-    ax.set_xlim(-0.45, 0.35); ax.set_ylim(-0.6, 4.6)
-    # label the two groups the divider separates, out at the right where it's empty
-    ax.text(0.34, 3.5, "add to\nidentity\nprediction?", fontsize=9, color=MUTED,
-            style="italic", ha="right", va="center")
-    ax.text(0.34, 0.5, "own\nstructure?", fontsize=9, color=MUTED,
-            style="italic", ha="right", va="center")
-    _dress(ax); ax.yaxis.grid(False); ax.xaxis.grid(True, color="#eeeeee")
-    _titles(ax, "Do the 'expressive' features (ornament, rubato) add anything? — barely",
-            "On top of rhythm + tempo. Blue = a real positive contribution; grey = negligible or "
-            "negative. Only rubato's own weak self-structure (bottom) stands out.", wrap=96)
-    fig.tight_layout()
-    FIG.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIG / "6_expressive_adds_little.png", dpi=150, bbox_inches="tight")
-    plt.close(fig)
-
-
 def main():
     fig_data_model(); print("plain/1_the_data_model.png")
     fig_universal(); print("plain/2_current_predicts_next.png")
-    fig_exchange(); print("plain/3_between_whale_reply.png")
-    fig_expressive(); print("plain/6_expressive_adds_little.png")
-    print("(run  python -m coda_recovery.clan_similarity  for plain/4 & plain/5)")
+    print("(run  python -m coda_recovery.clan_similarity  for plain/3 & plain/4)")
 
 
 if __name__ == "__main__":

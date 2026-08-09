@@ -1,56 +1,38 @@
-"""Predictive-information test — EC1 native single-whale SUPPLEMENT.
+"""Mutual-information machinery + EC1 native-sequence evaluation.
 
-This measures EC1's within-clan predictive information using its *richer* native
-data: the paper's own rhythm/tempo labels and true single-whale sequences (known
-speakers, real onset times, ≤ 8 s apart). That is more precise than the uniform
-cross-clan pipeline but NOT comparable to the Pacific clans, which lack speaker IDs
-— so it is a supplement, not the headline. The primary, apples-to-apples within-clan
-result (EC1 put through the same pipeline as everyone else) is in
-`predictive_info_sweep.py`; `ec1_pacified.py` shows how much the two differ. This
-module also provides the shared MI machinery (`_gain`, `ALPHA`, `NREP`,
-`single_whale_sequences`) used across the project.
+Provides the shared held-out MI primitives used across the project — `_gain`
+(cross-validated bigram-vs-unigram log-likelihood ratio, bits/coda), `ALPHA`, `NREP`
+— and the EC1-only native-sequence helpers (`single_whale_sequences`, `evaluate`)
+used by `ec1_pacified.py` to justify the uniform pipeline (it shows that measuring
+EC1 with its richer native data makes it an artificial outlier).
 
-The question is "does the previous coda predict the next, beyond frequency?" We
-answer it directly, with no alignment and no shuffle (both of which introduced
-artefacts): a cross-validated likelihood-ratio between a bigram model
-P(next | current) and a unigram model P(next), on held-out data.
+The primary, cross-clan-comparable analysis does NOT use the native single-whale
+segmentation here — it goes through `standardize.py` so every clan is treated the
+same. This module is a library; it has no standalone entry point.
 
   gain (bits/coda) = mean over held-out pairs of  log2 P_bi(next|cur) − log2 P_uni(next)
 
-This is the held-out (bias-free) estimate of the mutual information I(current;next)
-between consecutive (rhythm, tempo) tokens. gain > 0 (CI clears zero) means the
-current coda genuinely predicts the next beyond base rates — cross-validated, so
-overfitting can only *lower* it. It is immune to the diagonal-dominance problem
-that broke the QAP metric (a likelihood, not a matrix alignment) and needs no
-shuffle-scale choice (the unigram IS the frequency null).
-
-Tokens are the factored (rhythm, tempo) representation (ornament and rubato left
-out, per request). We report the joint token and each axis alone, and split the
-gain into its persistence part (self-repeats) and its genuine-transition part.
-
-Run:  python -m coda_recovery.predictive_info
+A cross-validated estimate of the mutual information I(current; next) between
+consecutive tokens: > 0 (CI clears zero) means the current coda predicts the next
+beyond base rates. Immune to the diagonal-dominance problem that broke the retired
+QAP metric, and needs no shuffle (the unigram IS the frequency null).
 """
 from __future__ import annotations
 
-import csv
 from collections import Counter, defaultdict
 from itertools import groupby
 from math import log2
-from pathlib import Path
 
 import numpy as np
 
-from .coda_model import load
-
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "results" / "predictive_info.csv"
 SEQUENCE_GAP_S = 8.0
 ALPHA = 0.5          # add-alpha smoothing for the models
 NREP = 40            # repeated train/test splits over deployments
 
 
 def single_whale_sequences(codas):
-    """List of (deployment, [codas]) — same speaker, consecutive <= 8 s apart."""
+    """List of (deployment, [codas]) — same speaker, consecutive <= 8 s apart.
+    EC1-only (needs speaker IDs + onset times); used for the native-vs-uniform check."""
     cs = sorted(codas, key=lambda c: (c.deployment, c.speaker, c.t_start))
     out = []
     for _, grp in groupby(cs, key=lambda c: (c.deployment, c.speaker)):
@@ -107,6 +89,8 @@ def _gain(train, test, vocab, transition_only=False):
 
 
 def evaluate(mode, seqs, deps, rng_seed=0):
+    """EC1 native single-whale within-clan MI (total + transition-only), for the
+    native-vs-uniform comparison in `ec1_pacified.py`."""
     tokfn = _tokfn(mode)
     vocab = {tokfn(c) for _, seq in seqs for c in seq}
     all_pairs = _pairs(seqs, tokfn)
@@ -137,30 +121,3 @@ def evaluate(mode, seqs, deps, rng_seed=0):
             "gain_positive": bool(lo_all > 0),
             "gain_bits_nonself": round(m_off, 4), "nonself_lo": round(lo_off, 4),
             "nonself_hi": round(hi_off, 4), "nonself_positive": bool(lo_off > 0)}
-
-
-def main():
-    codas = load()
-    seqs = single_whale_sequences(codas)
-    deps = np.array(sorted({dep for dep, _ in seqs}), dtype=object)
-    print("Predictive information — held-out bigram vs unigram (bits/coda), "
-          "single-whale sequences.\n")
-    print(f"{'token':<8}{'#tok':>5}{'pairs':>7}{'self%':>7}"
-          f"{'gain (95% CI)':>26}{'gain|non-self (95% CI)':>28}")
-    rows = []
-    for mode in ("joint", "rhythm", "tempo"):
-        r = evaluate(mode, seqs, deps)
-        rows.append(r)
-        print(f"{mode:<8}{r['n_tokens']:>5}{r['n_pairs']:>7}{r['self_repeat_frac']*100:>6.0f}%"
-              + f"{r['gain_bits']:+.4f} [{r['gain_lo']:+.4f},{r['gain_hi']:+.4f}]".rjust(26)
-              + f"{r['gain_bits_nonself']:+.4f} [{r['nonself_lo']:+.4f},{r['nonself_hi']:+.4f}]".rjust(28))
-    print("\ngain>0 = the current (rhythm,tempo) token predicts the next beyond frequency,")
-    print("cross-validated. 'non-self' removes repeats: genuine A->different-B structure.")
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUT.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
-    print(f"wrote {OUT}")
-
-
-if __name__ == "__main__":
-    main()

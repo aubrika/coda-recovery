@@ -1,9 +1,0 @@
-experiment,predictor,mi,mi_lo,mi_hi,gain,gain_lo,gain_hi,gain_positive
-predict_next_RT,RT,1.7651,1.7092,1.8221,0.0,0.0,0.0,False
-predict_next_RT,ornament,1.7727,1.7165,1.8301,0.0076,0.0061,0.0091,True
-predict_next_RT,rubato,1.4532,1.3867,1.5204,-0.3118,-0.3262,-0.2966,False
-predict_next_RT,ornament_+_rubato,1.4615,1.3946,1.5293,-0.3036,-0.3183,-0.2881,False
-predict_next_ornament,RT,-0.0129,-0.017,-0.009,,,,False
-predict_next_ornament,RTOR,-0.035,-0.0406,-0.0293,,,,False
-predict_next_rubato,RT,0.1313,0.1174,0.1455,,,,True
-predict_next_rubato,RTOR,0.129,0.1145,0.1439,,,,True

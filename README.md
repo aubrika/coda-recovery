@@ -54,18 +54,11 @@ artefact of overfitting.
 ## What we found
 
 - **The current coda predicts the next, beyond frequency — in every clan.** All 8
-  clans go through one **uniform pipeline** (no clan measured more cleanly than
-  another). Even with whale self-repeats removed, **every clan is positive on both
-  dials** — tempo +0.3 to +1.0 bits, rhythm +0.07 to +0.47, all clear of zero.
-  Structured sequencing is a general feature, not a quirk of one clan. (EC1's richer
-  data supports a sharper single-whale view — tempo +1.40, rhythm +0.87 — but that's
-  a labelled supplement, not comparable across clans.) **(Figure 2.)**
-
-- **Whales predict each other's reply — but only its duration.** When two whales
-  take turns (reply within 2 seconds), the reply's **tempo** is predictable from
-  the first whale's coda (+0.52 bits); its rhythm and full type are not. This is
-  the "coda matching" and duration drift the paper describes. Based on ~480
-  turn-taking pairs, so read the weaker dials cautiously. **(Figure 3.)**
+  clans go through one **uniform pipeline**, using only data both datasets share, so
+  no clan is measured more cleanly than another. Even with whale self-repeats removed,
+  **every clan is positive on both dials** — tempo +0.3 to +1.0 bits, rhythm +0.07 to
+  +0.47, all clear of zero. Structured sequencing is a general feature, not a quirk of
+  one clan. **(Figure 2.)**
 
 - **Clans do not share a sequencing grammar.** Train the "what follows what" model
   on clan A and use it to predict clan B: for *every* pair of different clans, A's
@@ -73,14 +66,7 @@ artefact of overfitting.
   clans' transition-geometries as closely as possible) agrees — every clan pair is
   distinct, with the Caribbean clan the biggest outlier. **The *what* is partly
   shared** (overlapping coda inventories) but **the *how* — the order — is
-  clan-specific.** **(Figures 4 and 5.)**
-
-- **The "expressive" features add almost nothing.** The paper layers two extra
-  features on rhythm + tempo — **ornament** (an occasional extra click) and
-  **rubato** (duration drift across a run). On top of rhythm + tempo they add
-  essentially nothing to predicting the next call's identity (ornament +0.01,
-  rubato −0.31). The next call's rubato direction *is* weakly predictable (+0.13),
-  as the paper reports; its ornament is not. **(Figure 6.)**
+  clan-specific.** **(Figures 3 and 4.)**
 
 ## Figures (`figures/plain/`)
 
@@ -95,13 +81,9 @@ neutral zero.
 2. **`2_current_predicts_next.png`** — in every clan, the current coda predicts the
    next beyond frequency *and* repetition (both dials, all 8 clans, clearing zero).
    *The headline.*
-3. **`3_between_whale_reply.png`** — the turn-taking exchange: only the reply's
-   duration is predictable from the first whale's coda.
-4. **`4_grammar_is_clan_specific.png`** — one clan's grammar predicts another's next
+3. **`3_grammar_is_clan_specific.png`** — one clan's grammar predicts another's next
    coda *worse than chance*; only the diagonal (a clan predicting itself) is warm.
-5. **`5_grammar_geometry.png`** — every clan's transition-geometry is distinct.
-6. **`6_expressive_adds_little.png`** — ornament and rubato add almost nothing on
-   top of rhythm + tempo.
+4. **`4_grammar_geometry.png`** — every clan's transition-geometry is distinct.
 
 ## What this does *not* show
 
@@ -112,8 +94,9 @@ neutral zero.
 - **Prediction is not identification.** Guessing the next coda is easy (75–85%,
   mostly repetition). Working out *which coda is which* from sequence position alone
   is a much harder, different question we don't tackle here.
-- **The between-whale result rests on little data** (~480 turn-taking pairs); tempo
-  there is solid, the other dials underpowered.
+- **Deliberately narrow scope.** We use only the data both datasets share. Richer
+  EC1-only avenues (the between-whale exchange, the ornament/rubato features) are
+  left for a possible later extension.
 
 *(An earlier version asked the identification question with QAP graph-matching; it
 proved the wrong tool for repetition-heavy data and was retired in favour of the
@@ -142,12 +125,10 @@ bash data/fetch_sharma.sh                        # fetch + de-pickle the Caribbe
 bash data/fetch_phase2.sh                        # fetch the 7 Pacific clans (Hersh)
 export PYTHONPATH=src
 
-python -m coda_recovery.predictive_info          # within-clan MI (the clean result)
-python -m coda_recovery.predictive_info_sweep    # between-whale + all 7 Pacific clans
-python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 4, 5)
-python -m coda_recovery.expressive               # do ornament/rubato add anything? (fig 6)
-python -m coda_recovery.ec1_pacified             # EC1 under the uniform pipeline
-python -m coda_recovery.plain_figures            # figures 1, 2, 3, 6
+python -m coda_recovery.predictive_info_sweep    # within-clan MI, all 8 clans (uniform)
+python -m coda_recovery.clan_similarity          # cross-clan grammar comparison (figs 3, 4)
+python -m coda_recovery.ec1_pacified             # methods check: native EC1 vs uniform
+python -m coda_recovery.plain_figures            # figures 1, 2
 pytest                                           # MI-core sanity tests
 ```
 

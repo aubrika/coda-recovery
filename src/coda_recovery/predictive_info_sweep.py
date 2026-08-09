@@ -1,45 +1,31 @@
-"""Predictive-information (mutual-information) sweep — held-out MI within every clan,
-plus EC1's between-whale exchange.
+"""Predictive-information (mutual-information) sweep — held-out MI within every clan.
 
 MI = mutual information: the held-out bigram-vs-unigram log-likelihood gain is a
 cross-validated estimate of I(current token; next token), in bits/coda. Positive
 (CI clears 0) = the current coda predicts the next beyond frequency.
 
-**Uniform pipeline (the primary within-clan result).** All 8 clans — EC1 and the 7
-Pacific clans — go through the *same* `standardize` treatment: nearest-template
-rhythm, per-clan quantile tempo, adjacent within-recording pairs with speakers
-pooled. EC1 is no longer measured more cleanly than the rest, so its numbers are
-directly comparable (see `ec1_pacified.py` for how much this changes EC1).
+All 8 clans — EC1 and the 7 Pacific clans — go through the *same* `standardize`
+pipeline (nearest-template rhythm, per-clan quantile tempo, adjacent within-recording
+pairs, speakers pooled), using only data both datasets share. No clan is measured
+more cleanly than another, so the numbers are directly comparable.
 
-**EC1 between-whale exchange (a supplement).** EC1's known speakers + real onset
-times allow one extra test the Pacific data can't: transitions *across* speakers
-(one whale's coda -> the other's reply, within the 2 s turn-taking window). Reported
-separately, labelled as EC1-only.
-
-Tokens: tempo, rhythm, joint (rhythm,tempo). Reports total MI and transition-only
-MI (repeats removed).
+Tokens: tempo, rhythm, joint (rhythm,tempo). Reports total MI and transition-only MI
+(repeats removed).
 
 Run:  python -m coda_recovery.predictive_info_sweep
 """
 from __future__ import annotations
 
 import csv
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 
 from .predictive_info import _gain, NREP
-from .coda_model import load
 from .standardize import clan_frame, pooled_pairs, token_fn, ALL_CLANS
 
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "results" / "predictive_info_sweep.csv"
-
-
-def _tf(mode):
-    return {"tempo": lambda c: c.tempo, "rhythm": lambda c: c.rhythm,
-            "joint": lambda c: (c.rhythm, c.tempo)}[mode]
 
 
 def _ci(x, rng):
@@ -69,51 +55,25 @@ def held_out_mi(all_pairs):
     return _ci(ga, rng), _ci(gt, rng), len(all_pairs), len(vocab)
 
 
-def ec1_between(codas, tf):
-    """EC1-only supplement: turn-taking pairs (different speakers, next onset 0-2 s
-    after the previous coda's termination)."""
-    out = []
-    by = defaultdict(list)
-    for c in codas:
-        by[c.deployment].append(c)
-    for dep, cs in by.items():
-        cs = sorted(cs, key=lambda c: c.t_start)
-        for a, b in zip(cs, cs[1:]):
-            gap = b.t_start - (a.t_start + a.duration)
-            if 0 <= gap <= 2 and a.speaker != b.speaker:
-                out.append((dep, tf(a), tf(b)))
-    return out
-
-
 def main():
     rows = []
-    print("Mutual information (held-out bits/coda). total | transition-only (repeats removed)\n")
-    print(f"{'dataset':<10}{'mode':<9}{'token':<8}{'pairs':>6}"
+    print("Mutual information (held-out bits/coda). total | transition-only (repeats removed)")
+    print("Uniform pipeline — all 8 clans treated identically.\n")
+    print(f"{'dataset':<10}{'token':<8}{'pairs':>6}"
           f"{'MI total (95% CI)':>24}{'MI transition (95% CI)':>26}")
-
-    def emit(dataset, mode, token, pairs):
-        (mt, ml, mh), (tt, tl, th), n, V = held_out_mi(pairs)
-        rows.append({"dataset": dataset, "mode": mode, "token": token, "pairs": n,
-                     "mi_total": round(mt, 3), "total_lo": round(ml, 3), "total_hi": round(mh, 3),
-                     "mi_transition": round(tt, 3), "trans_lo": round(tl, 3), "trans_hi": round(th, 3),
-                     "total_pos": bool(ml > 0), "transition_pos": bool(tl > 0)})
-        print(f"{dataset:<10}{mode:<9}{token:<8}{n:>6}"
-              + f"{mt:+.3f} [{ml:+.3f},{mh:+.3f}]".rjust(24)
-              + (f"{tt:+.3f} [{tl:+.3f},{th:+.3f}]".rjust(26) if np.isfinite(tt) else "  —".rjust(26)))
-
-    print("--- Within clan (UNIFORM pipeline — all 8 clans treated identically) ---")
     for clan in ALL_CLANS:
         label = clan if clan == "EC1" else f"PAC:{clan}"
         frame = clan_frame(clan, tempo="qcut")
         for token in ("tempo", "rhythm", "joint"):
-            emit(label, "within", token, pooled_pairs(frame, token_fn(token)))
+            (mt, ml, mh), (tt, tl, th), n, V = held_out_mi(pooled_pairs(frame, token_fn(token)))
+            rows.append({"dataset": label, "mode": "within", "token": token, "pairs": n,
+                         "mi_total": round(mt, 3), "total_lo": round(ml, 3), "total_hi": round(mh, 3),
+                         "mi_transition": round(tt, 3), "trans_lo": round(tl, 3), "trans_hi": round(th, 3),
+                         "total_pos": bool(ml > 0), "transition_pos": bool(tl > 0)})
+            print(f"{label:<10}{token:<8}{n:>6}"
+                  + f"{mt:+.3f} [{ml:+.3f},{mh:+.3f}]".rjust(24)
+                  + f"{tt:+.3f} [{tl:+.3f},{th:+.3f}]".rjust(26))
         print()
-
-    print("--- EC1 between-whale exchange (supplement — needs speakers + times) ---")
-    codas = load()
-    for token in ("tempo", "rhythm", "joint"):
-        emit("EC1", "between", token, ec1_between(codas, _tf(token)))
-    print()
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:

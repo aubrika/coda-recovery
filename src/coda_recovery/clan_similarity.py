@@ -180,13 +180,13 @@ def main():
              "How well clan A's 'what-follows-what' model predicts clan B's next coda, beyond B's own "
              "frequencies (bits/coda). Warm = shares grammar; cool = predicts worse than chance. "
              "Only the diagonal (a clan predicting itself) is warm.",
-             "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
+             "3_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Each clan's sequencing has its own distinct shape",
              "Distance between clans' (rhythm,tempo) transition patterns after the best possible "
              "alignment (Procrustes; 0 = identical, darker = more different). Symmetric; every clan pair is far apart.",
-             "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
-    print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
+             "4_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
+    print("\nwrote results/clan_similarity.csv, figures plain/3 & plain/4")
 
 
 if __name__ == "__main__":

@@ -8,9 +8,8 @@ Caribbean clan plus all 7 Pacific clans). It even holds when we remove the easy
 part (whales repeating themselves). The effect is real but modest: it makes the
 next call *more predictable*, not a "grammar" in any rich, meaning-carrying sense.
 
-Getting to this clean answer took a long detour through a method that kept giving
-fragile, self-contradicting results. That detour, and why the final method is
-trustworthy, is the honest heart of this write-up.
+The rest of this write-up explains what we measured, why the method is trustworthy,
+and where the honest limits are.
 
 ## The animals and their "words"
 
@@ -207,7 +206,8 @@ neutral zero).
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
-bash data/fetch_sharma.sh                 # fetch + de-pickle the factored data
+bash data/fetch_sharma.sh                 # fetch + de-pickle the Caribbean (EC1) data
+bash data/fetch_phase2.sh                 # fetch the 7 Pacific clans (Hersh)
 export PYTHONPATH=src
 python -m coda_recovery.predictive_info        # the clean within-clan MI result
 python -m coda_recovery.predictive_info_sweep   # between-whale + all Pacific clans

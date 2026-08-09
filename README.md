@@ -13,9 +13,7 @@ is clan-specific.** The effect is real and reproducible, but modest: it makes th
 next call *more predictable*, not a rich, meaning-carrying "grammar."
 
 > **Read this first:** [`SUMMARY.md`](SUMMARY.md) tells the whole story in plain
-> language — including the long detour through a method that kept giving fragile,
-> self-contradicting answers, and why the final method is trustworthy. This README
-> is the short version.
+> language, and why the method is trustworthy. This README is the short version.
 
 ## The animals and their "words"
 
@@ -140,7 +138,8 @@ data is **fetched, not redistributed**.
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
-bash data/fetch_sharma.sh                        # fetch + de-pickle the factored data
+bash data/fetch_sharma.sh                        # fetch + de-pickle the Caribbean (EC1) data
+bash data/fetch_phase2.sh                        # fetch the 7 Pacific clans (Hersh)
 export PYTHONPATH=src
 
 python -m coda_recovery.predictive_info          # within-clan MI (the clean result)

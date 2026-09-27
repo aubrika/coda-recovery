@@ -1,38 +1,23 @@
-"""Mutual-information machinery + EC1 native-sequence evaluation.
+"""Held-out bigram log-likelihood gain and recording-level uncertainty.
 
-Provides the shared held-out MI primitives used across the project — `_gain`
-(cross-validated bigram-vs-unigram log-likelihood ratio, bits/coda), `ALPHA`, `NREP`
-— and the EC1-only native-sequence helpers (`single_whale_sequences`, `evaluate`)
-used by `ec1_pacified.py` to justify the uniform pipeline (it shows that measuring
-EC1 with its richer native data makes it an artificial outlier).
-
-The primary, cross-clan-comparable analysis does NOT use the native single-whale
-segmentation here — it goes through `standardize.py` so every clan is treated the
-same. This module is a library; it has no standalone entry point.
-
-  gain (bits/coda) = mean over held-out pairs of  log2 P_bi(next|cur) − log2 P_uni(next)
-
-A cross-validated estimate of the mutual information I(current; next) between
-consecutive tokens: > 0 (CI clears zero) means the current coda predicts the next
-beyond base rates. Immune to the diagonal-dominance problem that broke the retired
-QAP metric, and needs no shuffle (the unigram IS the frequency null).
+For changes-only scoring, both models exclude the current token. The frequency
+baseline is fitted on ALL training destinations before conditioning on a change.
+Filtering first would introduce dependence even in independent token sequences.
 """
 from __future__ import annotations
 
-from collections import Counter, defaultdict
 from itertools import groupby
-from math import log2
 
 import numpy as np
 
 SEQUENCE_GAP_S = 8.0
-ALPHA = 0.5          # add-alpha smoothing for the models
-NREP = 40            # repeated train/test splits over deployments
+ALPHA = 0.5
+NBOOT = 500
+NFOLDS = 5
 
 
 def single_whale_sequences(codas):
-    """List of (deployment, [codas]) — same speaker, consecutive <= 8 s apart.
-    EC1-only (needs speaker IDs + onset times); used for the native-vs-uniform check."""
+    """EC1 supplement: same speaker, consecutive onsets at most eight seconds apart."""
     cs = sorted(codas, key=lambda c: (c.deployment, c.speaker, c.t_start))
     out = []
     for _, grp in groupby(cs, key=lambda c: (c.deployment, c.speaker)):
@@ -42,82 +27,120 @@ def single_whale_sequences(codas):
             if c.t_start - prev.t_start <= SEQUENCE_GAP_S:
                 cur.append(c)
             else:
-                out.append((cur[0].deployment, cur)); cur = [c]
+                out.append((cur[0].deployment, cur))
+                cur = [c]
         out.append((cur[0].deployment, cur))
     return out
 
 
-def _tokfn(mode):
-    return {"joint": lambda c: (c.rhythm, c.tempo),
-            "rhythm": lambda c: c.rhythm, "tempo": lambda c: c.tempo}[mode]
+def pair_counts(pairs, vocab):
+    index = {token: i for i, token in enumerate(vocab)}
+    counts = np.zeros((len(vocab), len(vocab)), dtype=float)
+    for _, a, b in pairs:
+        counts[index[a], index[b]] += 1
+    return counts
 
 
-def _pairs(seqs, tokfn):
-    """(deployment, tok_a, tok_b) for adjacent codas within each sequence."""
-    out = []
-    for dep, seq in seqs:
-        toks = [tokfn(c) for c in seq]
-        for a, b in zip(toks, toks[1:]):
-            out.append((dep, a, b))
-    return out
+def log_gain_matrix(train, transition_only=False, baseline=None):
+    """Cellwise log2(P_bigram / P_frequency).
+
+    An optional baseline count matrix allows transfer models to use the target
+    clan's training frequencies. All inputs include self-pairs. For a != b the
+    conditional baseline is (n_b + alpha) / (N - n_a + alpha * (V - 1)).
+    """
+    baseline = train if baseline is None else baseline
+    destinations = baseline.sum(axis=0) + ALPHA
+    bigram = train + ALPHA
+    frequency = np.broadcast_to(destinations, train.shape).copy()
+    if transition_only:
+        np.fill_diagonal(bigram, 0)
+        np.fill_diagonal(frequency, 0)
+    if len(train) < 2 and transition_only:
+        return np.zeros_like(train)
+    bigram = bigram / bigram.sum(axis=1, keepdims=True)
+    frequency = frequency / frequency.sum(axis=1, keepdims=True)
+    # Diagonal cells are not scored in the changes-only analysis.
+    if transition_only:
+        np.fill_diagonal(bigram, 1)
+        np.fill_diagonal(frequency, 1)
+    return np.log2(bigram / frequency)
 
 
 def _gain(train, test, vocab, transition_only=False):
-    """Held-out mean log2 likelihood-ratio (bigram vs unigram), bits/coda.
-
-    transition_only=False: all pairs — total predictive information (includes the
-        whales' heavy self-repetition, which is legitimate order-dependence).
-    transition_only=True: train AND test on non-self pairs (a!=b) — isolates
-        genuine "given a change, does the source predict the destination beyond the
-        base rate of destinations?" (Training on non-self is essential: the full
-        bigram spends its mass on the diagonal, so it would under-predict any
-        change purely as an artefact.)"""
-    if transition_only:
-        train = [p for p in train if p[1] != p[2]]
-        test = [p for p in test if p[1] != p[2]]
-    V = len(vocab)
-    uni = Counter(b for _, _, b in train); Nu = sum(uni.values())
-    bi = defaultdict(Counter); rowsum = Counter()
-    for _, a, b in train:
-        bi[a][b] += 1; rowsum[a] += 1
-    g = []
-    for _, a, b in test:
-        p_uni = (uni[b] + ALPHA) / (Nu + ALPHA * V)
-        p_bi = (bi[a][b] + ALPHA) / (rowsum[a] + ALPHA * V)
-        g.append(log2(p_bi) - log2(p_uni))
-    return g
+    """Per-pair held-out gains; retained as a small, directly testable primitive."""
+    vocab = sorted(vocab, key=repr)
+    index = {t: i for i, t in enumerate(vocab)}
+    scores = log_gain_matrix(pair_counts(train, vocab), transition_only)
+    return [float(scores[index[a], index[b]]) for _, a, b in test
+            if not transition_only or a != b]
 
 
-def evaluate(mode, seqs, deps, rng_seed=0):
-    """EC1 native single-whale within-clan MI (total + transition-only), for the
-    native-vs-uniform comparison in `ec1_pacified.py`."""
-    tokfn = _tokfn(mode)
-    vocab = {tokfn(c) for _, seq in seqs for c in seq}
-    all_pairs = _pairs(seqs, tokfn)
-    self_frac = np.mean([a == b for _, a, b in all_pairs])
-    rng = np.random.default_rng(rng_seed)
-    fold_gain_all, fold_gain_off = [], []
-    for r in range(NREP):
-        d = deps.copy(); rng.shuffle(d)
-        te = set(d[:max(1, len(d) // 3)])
-        train = [p for p in all_pairs if p[0] not in te]
-        test = [p for p in all_pairs if p[0] in te]
-        if not test or not train:
-            continue
-        fold_gain_all.append(np.mean(_gain(train, test, vocab, transition_only=False)))
-        goff = _gain(train, test, vocab, transition_only=True)
-        fold_gain_off.append(np.mean(goff) if goff else np.nan)
+def recording_folds(units, seed=0):
+    """Disjoint recording folds. A recording and all its bootstrap copies stay together."""
+    if len(units) < 2:
+        raise ValueError("Held-out scoring needs at least two recordings")
+    return np.array_split(np.random.default_rng(seed).permutation(len(units)),
+                          min(NFOLDS, len(units)))
 
-    def ci(x):
-        x = np.array([v for v in x if np.isfinite(v)])
-        bs = [np.mean(rng.choice(x, len(x), replace=True)) for _ in range(4000)]
-        return float(x.mean()), float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))
 
-    m_all, lo_all, hi_all = ci(fold_gain_all)
-    m_off, lo_off, hi_off = ci(fold_gain_off)
-    return {"mode": mode, "n_tokens": len(vocab), "n_pairs": len(all_pairs),
-            "self_repeat_frac": round(float(self_frac), 3),
-            "gain_bits": round(m_all, 4), "gain_lo": round(lo_all, 4), "gain_hi": round(hi_all, 4),
-            "gain_positive": bool(lo_all > 0),
-            "gain_bits_nonself": round(m_off, 4), "nonself_lo": round(lo_off, 4),
-            "nonself_hi": round(hi_off, 4), "nonself_positive": bool(lo_off > 0)}
+def _crossfit(fold_counts):
+    total = sum(fold_counts)
+    sums = np.zeros(2)
+    sizes = np.zeros(2)
+    for test in fold_counts:
+        train = total - test
+        for k, changes_only in enumerate((False, True)):
+            scored = test.copy()
+            if changes_only:
+                np.fill_diagonal(scored, 0)
+            sums[k] += np.sum(scored * log_gain_matrix(train, changes_only))
+            sizes[k] += scored.sum()
+    return np.divide(sums, sizes, out=np.full(2, np.nan), where=sizes > 0)
+
+
+def held_out_gain(all_pairs, n_boot=NBOOT, seed=0):
+    """Five-fold recording CV, weighted by scored pairs, with cluster bootstrap.
+
+    Resample whole recordings within each fixed fold and refit both models for
+    every replicate. Percentile intervals are conditional on these folds and the
+    supplied tokenization; they do not cover uncertainty from label construction.
+    Return (total estimate/lo/hi), (changes estimate/lo/hi), pair count, vocab size.
+    n_boot=0 computes point estimates only (bounds are NaN).
+    """
+    vocab = sorted({t for _, a, b in all_pairs for t in (a, b)}, key=repr)
+    units = sorted({u for u, _, _ in all_pairs}, key=repr)
+    folds = recording_folds(units, seed)
+    unit_index = {u: i for i, u in enumerate(units)}
+    token_index = {t: i for i, t in enumerate(vocab)}
+    counts = np.zeros((len(units), len(vocab), len(vocab)))
+    for u, a, b in all_pairs:
+        counts[unit_index[u], token_index[a], token_index[b]] += 1
+    point = _crossfit([counts[f].sum(axis=0) for f in folds])
+    rng = np.random.default_rng(seed + 1)
+    boot = []
+    for _ in range(n_boot):
+        boot.append(_crossfit([counts[rng.choice(f, len(f), replace=True)].sum(axis=0)
+                              for f in folds]))
+    bounds = np.full((2, 2), np.nan)
+    if n_boot:
+        for k in range(2):
+            values = np.array(boot)[:, k]
+            values = values[np.isfinite(values)]
+            if len(values):
+                bounds[:, k] = np.percentile(values, [2.5, 97.5])
+    return ((float(point[0]), *bounds[:, 0]), (float(point[1]), *bounds[:, 1]),
+            len(all_pairs), len(vocab))
+
+
+def evaluate(mode, seqs, deps=None, rng_seed=0):
+    """Native EC1 supplement, using the same scoring and bootstrap as the sweep."""
+    tokfn = {"joint": lambda c: (c.rhythm, c.tempo),
+             "rhythm": lambda c: c.rhythm, "tempo": lambda c: c.tempo}[mode]
+    pairs = [(dep, tokfn(a), tokfn(b)) for dep, seq in seqs for a, b in zip(seq, seq[1:])]
+    (mean, lo, hi), (change, clo, chi), n, v = held_out_gain(pairs, seed=rng_seed)
+    return {"mode": mode, "n_tokens": v, "n_pairs": n,
+            "self_repeat_frac": round(float(np.mean([a == b for _, a, b in pairs])), 3),
+            "gain_bits": round(mean, 4), "gain_lo": round(lo, 4), "gain_hi": round(hi, 4),
+            "gain_positive": bool(lo > 0), "gain_bits_nonself": round(change, 4),
+            "nonself_lo": round(clo, 4), "nonself_hi": round(chi, 4),
+            "nonself_positive": bool(clo > 0)}

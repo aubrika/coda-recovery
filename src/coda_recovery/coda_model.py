@@ -1,22 +1,8 @@
-"""Factored 4-feature coda data model (Sharma et al. 2024), replacing the single
-categorical "type". See coda-4d-data-model.md. Nothing here is invented: rhythm,
-tempo, and ornament come directly from the paper's own deposit
-(github.com/pratyushasharma/sw-combinatoriality); rubato direction is derived per
-the paper's definition.
+"""Native EC1 data model and preprocessing for the speaker-level supplement.
 
-Source files (fetched, gitignored — no explicit repo licence):
-  data/raw/sharma/sperm-whale-dialogues.csv  Dataset 2: ordered DTag codas with
-      REC (deployment), Whale (speaker), TsTo (absolute onset time, s), raw ICIs.
-  data/raw/sharma/rhythms.p   list[int], per-coda rhythm 0..17 (aligned by row)
-  data/raw/sharma/ornaments.p list[int], per-coda ornament flag (aligned by row)
-  data/raw/sharma/tempos-dict.p  tempo cluster -> member durations (5 clusters)
-
-We de-pickle ONCE into a plain CSV (data/derived/ec1_dataset2.csv) so the pipeline
-and any reviewer never touch a pickle. `load()` reads that CSV.
-
-FIREWALL (spec 5): rhythm/tempo are the recovery TARGET and are never fed to the
-matcher as node features; nor are n_clicks/duration/icis/legacy_type. Only
-transition counts between (rhythm, tempo) tokens carry the signal.
+Rhythm and ornament labels are read from the source pickles; duration bins
+follow the recorded tempo edges. Derived rows are cached in a local CSV.
+Run data/fetch.py all --verify before processing the recorded source files.
 """
 from __future__ import annotations
 

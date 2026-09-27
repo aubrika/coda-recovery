@@ -1,19 +1,6 @@
-"""Why we standardized: EC1 native (richer) vs EC1 through the uniform pipeline.
+"""Compare EC1 native speaker sequences with pooled recording sequences.
 
-EC1 used to be measured more cleanly than the Pacific clans — the paper's native
-rhythm/tempo labels and true single-whale sequences (known speakers, real onset
-times). That made it look like a large outlier. This script puts EC1 through the
-*same* `standardize` pipeline everyone else gets (nearest-template rhythm, quantile
-tempo, pooled within-recording pairs) and prints the two side by side, against the
-Pacific band, so the size of the measurement effect is on the record.
-
-Finding: EC1's rhythm advantage largely collapses into the Pacific band under the
-uniform pipeline; its tempo stays comparatively high (a residual confounded by
-pooled between-whale matching + balanced tempo bins). Hence the project now reports
-the uniform-pipeline numbers as primary (`predictive_info_sweep.py`), with the native
-single-whale view kept only as a labelled supplement (`predictive_info.py`).
-
-Run (after predictive_info_sweep):  python -m coda_recovery.ec1_pacified
+Tokenization and sequence construction both change; this is a sensitivity check.
 """
 from __future__ import annotations
 
@@ -25,7 +12,7 @@ import pandas as pd
 
 from .coda_model import load
 from .predictive_info import evaluate, single_whale_sequences
-from .predictive_info_sweep import held_out_mi
+from .predictive_info import held_out_gain
 from .standardize import clan_frame, pooled_pairs, token_fn, ALL_CLANS
 
 REPO = Path(__file__).resolve().parents[2]
@@ -46,8 +33,8 @@ def standardized_ec1():
     frame = clan_frame("EC1", tempo="qcut")
     out = {}
     for t in TOKENS:
-        (mt, ml, mh), (tt, tl, th), n, _ = held_out_mi(pooled_pairs(frame, token_fn(t)))
-        out[t] = {"mi_total": mt, "mi_transition": tt, "pairs": n}
+        (mt, ml, mh), (tt, tl, th), n, _ = held_out_gain(pooled_pairs(frame, token_fn(t)))
+        out[t] = {"gain_total": mt, "gain_transition": tt, "pairs": n}
     return out
 
 
@@ -62,8 +49,8 @@ def main():
     rows = []
     for t in TOKENS:
         nt, ntr = nat[t]["gain_bits"], nat[t]["gain_bits_nonself"]
-        st, str_ = std[t]["mi_total"], std[t]["mi_transition"]
-        band = pac[pac.token == t].mi_total
+        st, str_ = std[t]["gain_total"], std[t]["gain_transition"]
+        band = pac[pac.token == t].gain_total
         print(f"{t:<8}{nt:>+14.2f}{st:>+15.2f}{ntr:>+14.2f}{str_:>+15.2f}"
               + f"{band.min():+.2f}..{band.max():+.2f}".rjust(22))
         rows.append({"token": t, "native_total": round(nt, 3), "uniform_total": round(st, 3),
@@ -71,12 +58,9 @@ def main():
                      "pacific_total_min": round(float(band.min()), 3),
                      "pacific_total_max": round(float(band.max()), 3)})
 
-    print("\nUnder the uniform pipeline EC1's rhythm advantage collapses toward the Pacific")
-    print("band; the tempo residual is confounded (pooled matching + balanced bins). The")
-    print("uniform numbers are what the project reports as primary.")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n"); w.writeheader(); w.writerows(rows)
     print(f"\nwrote {OUT}")
 
 

@@ -1,7 +1,15 @@
 # Data provenance
 
-Two sperm-whale sources, both fetched (not redistributed — no explicit repo
-licence), never unpickled by the analysis pipeline.
+Two sperm-whale sources, fetched separately from the repository. The input bytes
+used for the September 2026 rerun are pinned by SHA-256 in
+[`../sources.json`](../sources.json). Run `python data/fetch.py all --verify`
+from the repository root to check local inputs. The fetcher also checks downloaded
+bytes before writing them. These digests record the existing analysis inputs;
+they are not an independent audit of the deposits.
+
+EC1 preprocessing and rhythm-template loading read Python pickles. The native
+EC1 rows are cached as CSV after preprocessing; template loading still reads
+`mean_codas.p`. The previous claim that the pipeline never unpickles was incorrect.
 
 ## hersh2022_pacific_coda.csv — the 7 Pacific clans (fetch via ../fetch_phase2.sh)
 - Hersh et al. 2022, PNAS 119:e2201692119. OSF osf.io/ae6pd, file 9hwmj.
@@ -21,5 +29,5 @@ licence), never unpickled by the analysis pipeline.
 - rhythm (0..17) from `rhythms.p`, ornament from `ornaments.p` (per-coda, row-aligned;
   verified 100% vs nearest `mean_codas.p` template). tempo (0..4) from Duration bins
   reproducing `tempos-dict.p` clusters; rubato_dir derived per paper (Section 3).
-- De-pickled once to a plain CSV so the pipeline never unpickles: see `coda_model.py`.
+- Native EC1 rows are converted to a local CSV by `coda_model.py`.
   Audited field-level inventory in `../inventory/factored_inventory.md`.

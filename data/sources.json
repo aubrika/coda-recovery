@@ -1,0 +1,42 @@
+{
+  "recorded": "2026-09-26",
+  "note": "Digests of the local inputs used for the corrected analysis. URLs are locators; hashes pin the bytes.",
+  "files": [
+    {
+      "dataset": "sharma",
+      "path": "data/raw/sharma/mean_codas.p",
+      "url": "https://raw.githubusercontent.com/pratyushasharma/sw-combinatoriality/main/data/mean_codas.p",
+      "sha256": "3031e571b1fb0afab4db9757562319a33cdb19b356a1858a117f2279a8d85019"
+    },
+    {
+      "dataset": "sharma",
+      "path": "data/raw/sharma/ornaments.p",
+      "url": "https://raw.githubusercontent.com/pratyushasharma/sw-combinatoriality/main/data/ornaments.p",
+      "sha256": "8e37ba3e6ee9938286cc255be0a5fd07067fd8aa4b0393c8978e9968c1655f1d"
+    },
+    {
+      "dataset": "sharma",
+      "path": "data/raw/sharma/rhythms.p",
+      "url": "https://raw.githubusercontent.com/pratyushasharma/sw-combinatoriality/main/data/rhythms.p",
+      "sha256": "cd204bef55e7c296ac7f035babfc71b0e34ee8f81ad286c3e430186bc9f2238b"
+    },
+    {
+      "dataset": "sharma",
+      "path": "data/raw/sharma/sperm-whale-dialogues.csv",
+      "url": "https://raw.githubusercontent.com/pratyushasharma/sw-combinatoriality/main/data/sperm-whale-dialogues.csv",
+      "sha256": "1856c8bf915cc5ae6f928aaa2036cbbc6ad8840bb6e4f6a96aaeb96953215da2"
+    },
+    {
+      "dataset": "sharma",
+      "path": "data/raw/sharma/tempos-dict.p",
+      "url": "https://raw.githubusercontent.com/pratyushasharma/sw-combinatoriality/main/data/tempos-dict.p",
+      "sha256": "a50b255d157577b6e1eb5de95442791d57c6257465cf825faffa1113e4c5a6bf"
+    },
+    {
+      "dataset": "hersh",
+      "path": "data/raw/hersh2022_pacific_coda.csv",
+      "url": "https://osf.io/download/9hwmj/",
+      "sha256": "96bbf264286eadc94c3d2d68229b133fa135733f759c0bad915c66ccd7a84acf"
+    }
+  ]
+}

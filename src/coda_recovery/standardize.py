@@ -1,23 +1,9 @@
-"""The one uniform pipeline — treat every clan's data identically.
+"""Shared tokenization and recording-pair construction.
 
-Turns ANY of the 8 clans' raw codas into standardized (rhythm, tempo) tokens and
-within-recording pooled sequences, so EC1 (the Caribbean clan, whose data is richer)
-is measured *exactly* like the 7 Pacific clans — no clan measured more cleanly than
-another. This is the source of truth for the cross-clan comparisons (the universal
-within-clan figure and the clan-similarity heatmaps).
-
-  rhythm = nearest EC1 template (`assign_rhythm`)
-  tempo  = 5 duration bins — per-clan quantiles ("qcut", for within-clan analysis,
-           balanced so frequency alone gives no signal) OR the shared EC1 edges
-           ("global", for cross-clan token comparability)
-  pairs  = adjacent codas within one recording (grpvar), speakers POOLED
-           (EC1 ordered by real onset; Pacific by coda_number, contiguous only)
-
-EC1's richer native data (known speakers, real onset times, ornament/rubato) still
-enables three EC1-only SUPPLEMENTS that the Pacific data can't support — single-whale
-sequences (`predictive_info.py`), the between-whale exchange (`predictive_info_sweep`),
-and the expressive features (`expressive.py`). Those are labelled as supplements, not
-part of this cross-clan-comparable pipeline.
+Rhythm uses the nearest EC1 template. Tempo uses per-clan quantiles for the
+within-clan sweep or fixed EC1 edges for transfer. EC1 is ordered by onset;
+Pacific pairs must be contiguous by coda number. Speakers are pooled.
+These processing choices do not remove differences between collection protocols.
 """
 from __future__ import annotations
 

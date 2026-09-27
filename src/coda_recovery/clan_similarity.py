@@ -1,19 +1,9 @@
-"""How similar are clans' sequencing 'grammars'? Two measures over a shared global
-(rhythm, tempo) token space (rhythm = nearest EC1 template; tempo = EC1 duration
-bins — so tokens mean the same thing across clans).
+"""Descriptive pairwise comparison on shared rhythm/duration tokens.
 
-1. CROSS-PREDICTION (interpretable, MI-native): train the bigram P(next|current)
-   on clan A, and score clan B's held-out codas against B's OWN frequency baseline.
-   transfer[A→B] (bits/coda) = how much A's grammar predicts B beyond B's base
-   rates. Diagonal = within-clan predictive information. Off-diagonal > 0 = shared
-   grammar. Asymmetry is informative.
-
-2. PROCRUSTES on PMI embeddings (the MUSE version): embed each clan's shared tokens
-   via SVD of its pointwise-mutual-information matrix, orthogonally align two clans
-   (tokens correspond, since the scheme is global), and read the residual as a
-   rotation-invariant structural DISTANCE. Small = similar geometry of associations.
-
-Run:  python -m coda_recovery.clan_similarity
+Cross-prediction compares a source-clan bigram with target-clan training
+frequencies on held-out recordings. All pairs, including repeats, are used.
+Procrustes distances compare low-rank PMI embeddings on pooled frequent tokens;
+they are descriptive distances without a significance test.
 """
 from __future__ import annotations
 
@@ -40,9 +30,7 @@ EMB_K, EMB_D = 15, 5
 
 
 def get_pairs():
-    """clan -> list of (cv_unit, (rhythm,tempo), (rhythm,tempo)) over shared global
-    tokens, every clan through the SAME uniform pipeline (EC1 included — no special
-    native treatment), so cross-clan comparison is apples-to-apples."""
+    """Construct recording pairs in the shared global token space."""
     tok = lambda r: (int(r.rhythm), int(r.tempo))
     return {clan: pooled_pairs(clan_frame(clan, tempo="global"), tok) for clan in ALL_CLANS}
 
@@ -149,7 +137,7 @@ def main():
     print("clan pairs:", {c: len(p) for c, p in pairs.items()})
 
     T = cross_prediction(pairs)
-    print("\nCROSS-PREDICTION transfer[A->B] (bits/coda; diagonal = within-clan MI):")
+    print("\nCROSS-PREDICTION transfer[A->B] (bits/coda; diagonal = within-clan gain):")
     print("        " + "".join(f"{c:>7}" for c in CLAN_ORDER))
     for i, A in enumerate(CLAN_ORDER):
         print(f"{A:>7} " + "".join(f"{T[i, j]:>7.2f}" for j in range(len(CLAN_ORDER))))
@@ -160,16 +148,16 @@ def main():
     for i, A in enumerate(CLAN_ORDER):
         print(f"{A:>7} " + "".join(f"{D[i, j]:>7.2f}" for j in range(len(CLAN_ORDER))))
 
-    # off-diagonal transfer as a fraction of the target clan's own within-clan MI
+    # off-diagonal transfer as a fraction of the target clan's own within-clan gain
     self_mi = np.diag(T)
     off = T.copy(); np.fill_diagonal(off, np.nan)
-    print(f"\nmean within-clan MI (diagonal): {self_mi.mean():.2f} bits")
+    print(f"\nmean within-clan gain (diagonal): {self_mi.mean():.2f} bits")
     print(f"mean cross-clan transfer (off-diagonal): {np.nanmean(off):.2f} bits "
           f"({100*np.nanmean(off)/self_mi.mean():.0f}% of within-clan)")
 
     OUT.mkdir(exist_ok=True)
     with (OUT / "clan_similarity.csv").open("w", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["measure", "A"] + CLAN_ORDER)
         for i, A in enumerate(CLAN_ORDER):
             w.writerow(["cross_prediction_bits", A] + [round(T[i, j], 4) for j in range(len(CLAN_ORDER))])
@@ -187,10 +175,10 @@ def main():
              r"where $P_A$ = clan A's transition probability and $F_B$ = clan B's overall coda frequency.",
              "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
-    _heatmap(D, "Each clan's sequencing has its own distinct shape",
+    _heatmap(D, "Distances between estimated transition embeddings",
              "Each cell = Procrustes distance: the smallest ‖A·R − B‖ over rotations R, where A and B "
              "are the two clans' unit-normalized (rhythm,tempo) transition embeddings "
-             "(0 = the two clans' transition patterns are identical; larger = more different).",
+             "(0 = aligned embeddings coincide; larger = more different). No significance test is applied.",
              "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
     print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 

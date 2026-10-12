@@ -1,5 +1,7 @@
 # coda-recovery
 
+**Does the order of sperm-whale codas carry predictive information, and does it carry over from one clan to another?**
+
 Python analysis of adjacent sperm-whale codas across eight vocal clans. The project
 compares frequency-based and first-order sequence models on held-out recordings,
 then tests whether sequence models transfer between clans.
@@ -22,6 +24,8 @@ resampling whole recordings and refitting the models.
 
 ![Changes-only prediction gains with recording-bootstrap intervals](figures/plain/2_current_predicts_next.png)
 
+![Leave-one-clan-out transfer: a model fitted on the other seven clans against each clan's own model](figures/plain/3_shared_vs_clan_specific.png)
+
 **Correction, September 2026:** the previous changes-only baseline assigned
 probability to the excluded current token. Independent five-token data could
 therefore score about +0.32 bits solely because repeats were removed. That baseline
@@ -29,12 +33,15 @@ has been corrected, and the earlier claims of a universal tempo rule and
 above-zero changes-only effects in every clan have been withdrawn.
 [Methods and results](SUMMARY.md) explains the correction and the current estimates.
 
-## Scope
+## What this does *not* show
 
-This measures prediction of recorded token sequences. It does not identify meaning,
-syntax, or individual whales' choices. Speakers are pooled in the main analysis,
-and the Caribbean and Pacific data were collected differently. Shared processing
-does not remove those differences. See [limitations](limits.md).
+- **Nothing about meaning or syntax.** This measures prediction of recorded token
+  sequences. It does not identify meaning, syntax, or individual whales' choices.
+- **Not one whale's choices.** Speakers are pooled in the main analysis.
+- **Not a like-for-like comparison of oceans.** The Caribbean and Pacific data were
+  collected differently, and shared processing does not remove those differences.
+
+See [limitations](limits.md) for the full list.
 
 ## Reproduce
 
@@ -90,3 +97,13 @@ recording folds, bootstrap refitting, and cross-clan transfer.
 
 The name comes from an earlier attempt to recover coda labels by graph matching.
 [Development history](PROGRESS.md) records that change of direction.
+
+## License and credits
+
+The code is released under the [MIT License](LICENSE). The data are not mine and are
+not redistributed here: the Caribbean recordings are from Sharma et al. (2024) and the
+Pacific recordings from Hersh et al. (2022), fetched from their public deposits as
+described in [provenance](data/raw/PROVENANCE.md).
+
+Built with AI coding assistance (Claude Code). The questions, the analysis decisions
+and the conclusions are mine.

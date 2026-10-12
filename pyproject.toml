@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coda-recovery"
+version = "0.1.0"
+description = "Held-out sequence prediction on sperm-whale codas across eight vocal clans"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+# Lower bounds only; requirements.txt pins the exact versions used for the committed results.
+dependencies = ["numpy>=2", "scipy>=1.14", "pandas>=2.2", "matplotlib>=3.9"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

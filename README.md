@@ -12,26 +12,37 @@ cross-validation, conditional baselines, uncertainty estimation, and result figu
 
 ## Results
 
-The corrected analysis uses five recording folds and 500 bootstrap replicates,
-resampling whole recordings and refitting the models.
+**Knowing the current coda helps predict the next one in every clan. The advantage
+shrinks sharply once repeated codas are set aside, and what remains mostly fails to
+carry over from one clan to another.**
 
-- With all adjacent pairs included, tempo gains are positive in all eight clans;
-  rhythm gains are positive in all eight as point estimates, with one interval crossing zero.
-- When identical adjacent tokens are excluded, both models account for that exclusion.
-  The results are mixed: several estimates are near zero, and most intervals include zero.
-- In leave-one-clan-out prediction, tempo transfer is positive in **3 of 8** clans;
-  rhythm and joint-token transfer are positive in **0 of 8**. These are point estimates.
+The score is a gain in bits per coda pair: how much better a model that sees the
+current coda predicts the next one than a model that only knows how common each
+coda is, on recordings neither model was fitted to. Above zero means order carries
+information beyond frequency. Tempo (duration) and rhythm (click pattern) are
+scored separately.
+
+- **Order is predictive.** Across all adjacent pairs, tempo gains run from +0.15 to
+  +0.86 bits per pair and are clearly above zero in all eight clans. Rhythm gains run
+  from +0.07 to +0.78 and are clearly above zero in seven of eight.
+- **Most of that is repetition.** Whales often repeat a coda, and a repeat is easy to
+  predict. Scoring only the pairs where the coda changes, tempo gains fall to +0.03 to
+  +0.64 and stay clearly above zero in four of eight clans. Rhythm gains fall to
+  between -0.03 and +0.28 and are clearly above zero in none.
+- **What remains is mostly clan-specific.** A model fitted on seven clans predicts
+  the eighth clan's changes better than that clan's own coda frequencies for tempo in
+  three of eight clans (EC1, REG, SI), and for rhythm in none. On average it does
+  worse than frequencies alone: -0.11 bits for tempo and -0.68 for rhythm.
 
 ![Changes-only prediction gains with recording-bootstrap intervals](figures/plain/2_current_predicts_next.png)
 
 ![Leave-one-clan-out transfer: a model fitted on the other seven clans against each clan's own model](figures/plain/3_shared_vs_clan_specific.png)
 
-**Correction, September 2026:** the previous changes-only baseline assigned
-probability to the excluded current token. Independent five-token data could
-therefore score about +0.32 bits solely because repeats were removed. That baseline
-has been corrected, and the earlier claims of a universal tempo rule and
-above-zero changes-only effects in every clan have been withdrawn.
-[Methods and results](SUMMARY.md) explains the correction and the current estimates.
+"Clearly above zero" means the 95% interval excludes zero. Intervals come from 500
+bootstrap resamples of whole recordings, with five-fold cross-validation by
+recording. The transfer figures are point estimates without intervals.
+[Methods and results](SUMMARY.md) has the definitions, the full tables and the
+combined rhythm-and-tempo results.
 
 ## What this does *not* show
 
@@ -95,8 +106,18 @@ recording folds, bootstrap refitting, and cross-clan transfer.
 | [universal_structure.py](src/coda_recovery/universal_structure.py) | Leave-one-clan-out comparison |
 | [clan_similarity.py](src/coda_recovery/clan_similarity.py) | Pairwise transfer and descriptive embedding distances |
 
+## History and corrections
+
 The name comes from an earlier attempt to recover coda labels by graph matching.
 [Development history](PROGRESS.md) records that change of direction.
+
+**Correction, September 2026.** An earlier version of the changes-only comparison
+used a baseline that still assigned probability to the excluded current coda.
+Independent five-token data could therefore score about +0.32 bits solely because
+repeats were removed. The baseline now accounts for the exclusion, and the earlier
+claims of a universal tempo rule and above-zero changes-only effects in every clan
+have been withdrawn. [Methods and results](SUMMARY.md#correction-to-the-earlier-analysis)
+explains the correction.
 
 ## License and credits
 

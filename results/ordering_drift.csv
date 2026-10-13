@@ -1,0 +1,25 @@
+feature,scoring,analysis,tokens,clans,rho,p_positive,p_negative,p_two_sided,permutations
+tempo,changes only,distance vs ordering lost,4,8,0.000547,0.498165,0.502579,0.998562,40320
+tempo,changes only,distance vs ordering lost | frequency divergence,4,8,0.192336,0.187798,0.812227,0.378671,40320
+tempo,changes only,distance vs ordering lost | sample size,4,8,-0.041247,0.571801,0.428224,0.854588,40320
+tempo,changes only,distance vs frequency divergence,4,8,0.61029,0.004266,0.995809,0.004266,40320
+tempo,changes only,ordering lost vs frequency divergence,4,8,-0.241379,0.884871,0.115972,0.248462,40320
+tempo,changes only,Pacific only: distance vs ordering lost,4,7,0.048052,0.421627,0.579563,0.839683,5040
+tempo,all pairs,distance vs ordering lost,4,8,0.520525,0.025744,0.97438,0.044147,40320
+tempo,all pairs,distance vs ordering lost | frequency divergence,4,8,0.644907,0.005977,0.994048,0.008705,40320
+tempo,all pairs,distance vs ordering lost | sample size,4,8,0.567504,0.014856,0.985169,0.026612,40320
+tempo,all pairs,distance vs frequency divergence,4,8,0.447729,0.015526,0.984648,0.018204,40320
+tempo,all pairs,ordering lost vs frequency divergence,4,8,-0.116585,0.68998,0.310764,0.599826,40320
+tempo,all pairs,Pacific only: distance vs ordering lost,4,7,0.666234,0.000794,0.999405,0.001389,5040
+rhythm,changes only,distance vs ordering lost,7,8,0.250137,0.077852,0.922619,0.150818,40320
+rhythm,changes only,distance vs ordering lost | frequency divergence,7,8,-0.031691,0.564831,0.435193,0.867907,40320
+rhythm,changes only,distance vs ordering lost | sample size,7,8,0.250954,0.079762,0.920263,0.154563,40320
+rhythm,changes only,distance vs frequency divergence,7,8,0.400657,0.022768,0.977406,0.029588,40320
+rhythm,changes only,ordering lost vs frequency divergence,7,8,0.677614,0.009598,0.990575,0.009598,40320
+rhythm,changes only,Pacific only: distance vs ordering lost,7,7,0.418182,0.016667,0.983929,0.027976,5040
+rhythm,all pairs,distance vs ordering lost,7,8,0.397373,0.066121,0.934152,0.112847,40320
+rhythm,all pairs,distance vs ordering lost | frequency divergence,7,8,0.37212,0.083879,0.916146,0.157168,40320
+rhythm,all pairs,distance vs ordering lost | sample size,7,8,0.291898,0.143576,0.856448,0.263914,40320
+rhythm,all pairs,distance vs frequency divergence,7,8,0.208539,0.214335,0.786359,0.426736,40320
+rhythm,all pairs,ordering lost vs frequency divergence,7,8,0.193213,0.219841,0.780804,0.468279,40320
+rhythm,all pairs,Pacific only: distance vs ordering lost,7,7,0.332468,0.141468,0.858929,0.25873,5040

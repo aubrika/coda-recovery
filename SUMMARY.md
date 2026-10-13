@@ -173,10 +173,76 @@ Sensitivity, all in [drift.csv](results/drift.csv):
 - It depends on the embedding. With five or eight dimensions it ranges from +0.47 to
   +0.80 across 10, 15 and 25 tokens. With three dimensions it ranges from -0.02 to +0.33.
 
-The hypothesis that Procrustes distance measures drift in ordering is therefore
-untested, not refuted: neither measure yet separates ordering from inventory.
+Neither measure, as built here, separates ordering from inventory. The next
+section rebuilds both so that it can.
 
 ![Distance and lost predictability](figures/plain/6_distance_vs_predictability.png)
+
+## Ordering with inventory taken out
+
+`ordering_drift` repeats the comparison with both measures rebuilt so that coda
+frequencies cannot drive them. Its design was fixed before it was run on the data,
+and checked on synthetic sequences: a source with the same ordering but very
+different frequencies transfers over 90% of the gain, and a source with no ordering
+transfers none.
+
+**Tokens.** Tempo and rhythm are analysed separately, each on the tokens with at
+least 20 codas in every clan: four of the five duration bins, and seven of the 18
+rhythm classes. Pairs touching any other token are dropped. The combined token is
+not analysed, because none reaches 20 codas in all eight clans.
+
+**Carrying ordering over.** A transition table has margins (how common each token
+is) and odds ratios (how it departs from what the margins alone would give). To
+predict clan B from clan A, A's smoothed table is rescaled by iterative
+proportional fitting until its margins equal those of B's training recordings.
+This keeps A's odds ratios and takes every frequency from B. The gain is scored on
+B's held-out recordings against the table with B's margins and no association. For
+changes-only scoring the diagonal is a structural zero in both tables. Recordings
+are split as in the pairwise comparison: a third held out, 15 times.
+
+**Ordering lost** for a pair is each clan's own gain minus the gain from the other
+clan's ordering, averaged over both directions. **Distance** is the Procrustes
+distance between PMI embeddings on the same shared tokens.
+
+Changes-only scoring was chosen as the primary analysis in advance, because every
+clan repeats codas.
+
+| Feature | Scoring | Own gain, mean (range) | Foreign ordering helps | Foreign gain, mean |
+|---|---|---:|---:|---:|
+| Tempo | changes only | +0.10 (-0.01 to +0.36) | 42 of 56 | +0.07 |
+| Tempo | all pairs | +0.28 (+0.07 to +0.56) | 53 of 56 | +0.21 |
+| Rhythm | changes only | -0.02 (-0.06 to +0.07) | 3 of 56 | -0.12 |
+| Rhythm | all pairs | +0.29 (-0.06 to +0.65) | 42 of 56 | +0.11 |
+
+For tempo changes, the gain depends on the clan being predicted and very little on
+the clan supplying the ordering. Among the five clans whose own gain exceeds 0.05
+bits, another clan's ordering keeps 67% to 98% of it on average. For rhythm
+changes, clans' own gains on the shared classes are near zero, so transfer cannot
+be assessed.
+
+| Feature | Scoring | Distance vs ordering lost, ρ | p | Given token frequencies, ρ | p |
+|---|---|---:|---:|---:|---:|
+| Tempo | changes only | +0.00 | 1.00 | +0.19 | 0.38 |
+| Tempo | all pairs | +0.52 | 0.044 | +0.64 | 0.009 |
+| Rhythm | changes only | +0.25 | 0.15 | -0.03 | 0.87 |
+| Rhythm | all pairs | +0.40 | 0.11 | +0.37 | 0.16 |
+
+p-values are two-sided exact Mantel tests, unadjusted. The planned comparisons, on
+changes only, show no relationship. Tempo with repeats included does, and it
+strengthens when token frequencies are accounted for and when the Caribbean clan is
+left out (ρ = +0.67). It is one of four comparisons and was not the planned one, so
+it is a lead to follow up, not a result.
+
+Limits: transfer gains are point estimates without intervals. Duration bins are
+ordered, so successive codas of similar length fall in neighbouring bins in any
+clan; some shared tempo ordering may reflect duration changing smoothly. The shared
+token sets cover between 59% and 100% of a clan's tempo codas and between 29% and
+92% of its rhythm codas, so the Caribbean clan's rhythm is thinly represented.
+All of it is in [ordering_drift.csv](results/ordering_drift.csv),
+[ordering_transfer.csv](results/ordering_transfer.csv) and
+[ordering_drift_pairs.csv](results/ordering_drift_pairs.csv).
+
+![Tempo ordering](figures/plain/7_ordering_tempo.png)
 
 ## Artifacts
 
@@ -186,6 +252,7 @@ untested, not refuted: neither measure yet separates ordering from inventory.
 | Leave-one-clan-out CSV, figure 3 | `universal_structure` |
 | Pairwise CSV, figures 4 and 5 | `clan_similarity` |
 | Mantel tests, per-pair CSV, figure 6 | `drift` |
+| Ordering-only transfer and Mantel tests, figures 7 and 8 | `ordering_drift` |
 | Native vs pooled EC1 CSV | `ec1_pacified` |
 | Token-count overview, figure 1 | `plain_figures` |
 

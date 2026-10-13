@@ -13,8 +13,9 @@ cross-validation, conditional baselines, uncertainty estimation, and result figu
 ## Results
 
 **Knowing the current coda helps predict the next one in every clan. The advantage
-shrinks sharply once repeated codas are set aside, and what remains mostly fails to
-carry over from one clan to another.**
+shrinks sharply once repeated codas are set aside. Whether it carries over between
+clans depends on what is carried: a clan's coda frequencies do not transfer, but
+its tempo ordering largely does.**
 
 The score is a gain in bits per coda pair: how much better a model that sees the
 current coda predicts the next one than a model that only knows how common each
@@ -29,10 +30,15 @@ scored separately.
   predict. Scoring only the pairs where the coda changes, tempo gains fall to +0.03 to
   +0.64 and stay clearly above zero in four of eight clans. Rhythm gains fall to
   between -0.03 and +0.28 and are clearly above zero in none.
-- **What remains is mostly clan-specific.** A model fitted on seven clans predicts
-  the eighth clan's changes better than that clan's own coda frequencies for tempo in
-  three of eight clans (EC1, REG, SI), and for rhythm in none. On average it does
-  worse than frequencies alone: -0.11 bits for tempo and -0.68 for rhythm.
+- **A whole model does not transfer between clans.** A model fitted on seven clans
+  predicts the eighth clan's changes better than that clan's own coda frequencies for
+  tempo in three of eight clans (EC1, REG, SI), and for rhythm in none. On average it
+  does worse than frequencies alone: -0.11 bits for tempo and -0.68 for rhythm.
+- **Tempo ordering, taken alone, mostly does.** That model carries the other clans'
+  coda frequencies with it. When only the ordering is carried over and the frequencies
+  are the target clan's own, another clan's tempo ordering improves prediction in 42
+  of 56 clan-to-clan comparisons, and gains +0.07 bits on average against +0.10 for
+  a clan's own ordering. Rhythm cannot be tested this way yet (see below).
 
 ![Changes-only prediction gains with recording-bootstrap intervals](figures/plain/2_current_predicts_next.png)
 
@@ -44,34 +50,53 @@ recording. The transfer figures are point estimates without intervals.
 [Methods and results](SUMMARY.md) has the definitions, the full tables and the
 combined rhythm-and-tempo results.
 
-### What this may suggest
+### Is the ordering clan-specific?
 
-Read tentatively, these results suggest that each clan's coda sequences have a
-largely clan-specific structure: order is predictive within a clan, but a model of
-one clan's ordering says little about another's. Poor transfer can have other
-causes too, such as different coda inventories, sparse counts and different
-recording methods, so this is a reading of the results and not a conclusion.
+The hypothesis behind this project is that each clan has its own sequence
+structure, and that the Procrustes distance between two clans' structures could
+serve as a proxy for a kind of "linguistic drift" between them: clans that sit
+further apart should preserve less of each other's predictability. So far the
+results do not support it. This is a null result, reported as one.
 
-That reading sets up the hypothesis this project is working toward: can the
-Procrustes distance between two clans' sequence structures serve as a proxy for a
-kind of "linguistic drift" between them? If it can, the distance should track how
-much predictability is preserved from one clan to another. Clans whose structures
-sit closer together should predict each other better, and clans further apart
-should predict each other worse.
-
-A first test is in, and it does not yet support the hypothesis. Across the 28 pairs
-of clans, Procrustes distance does track how much predictability is lost between
-them (Spearman ρ = +0.47, exact Mantel p = 0.007). But both measures also track how
-different the two clans' coda inventories are, and once inventory is accounted for
-nothing is left (partial ρ = -0.06, p = 0.77). As currently built, the distance
-reflects which codas a clan uses, not separately how it orders them.
+**First test.** Across the 28 pairs of clans, Procrustes distance does track how
+much predictability is lost between them (Spearman ρ = +0.47, exact Mantel
+p = 0.007). But both measures also track how different the two clans' coda
+inventories are, and once inventory is accounted for nothing is left (partial
+ρ = -0.06, p = 0.77). As first built, the distance reflected which codas a clan
+uses, not how it orders them.
 
 ![Procrustes distance and predictability lost for every pair of clans, and the two plotted against each other](figures/plain/6_distance_vs_predictability.png)
 
-Testing the hypothesis properly needs a transfer score and an embedding that are
-both insensitive to inventory, for example by restricting each comparison to the
-codas two clans share. [Methods and results](SUMMARY.md#procrustes-distance-and-lost-predictability)
-has the details and the sensitivity checks.
+**Second test: ordering alone.** Both measures were rebuilt so that inventory
+cannot drive them. Each is restricted to the tokens every clan uses, and one clan's
+ordering is carried to another as the odds ratios of its transition table, with
+every frequency taken from the clan being predicted. On those terms:
+
+- **Tempo ordering is mostly shared.** How well a clan's tempo changes can be
+  predicted depends on which clan is being predicted, and hardly at all on which
+  clan the ordering came from.
+- **Distance does not track what little is lost.** For changes in tempo, Procrustes
+  distance and ordering lost are unrelated (ρ = +0.00, p = 1.00).
+- **Rhythm is untested.** On the seven rhythm classes all clans share, no clan's own
+  ordering reliably predicts its changes, so there is nothing to carry over.
+
+![Tempo ordering: Procrustes distance and ordering lost for every pair of clans](figures/plain/7_ordering_tempo.png)
+
+**What is still open.** Ordering itself has now been tested with inventory
+accounted for, but only for tempo and only this far:
+
+- The transfer scores are point estimates without intervals.
+- Tempo here is four duration bins. Successive codas of similar length will land in
+  neighbouring bins in any clan, so some of the shared "ordering" may be duration
+  changing smoothly, not a sequencing rule.
+- With repeats included, tempo does show the predicted relationship (ρ = +0.52,
+  p = 0.04). It is one of four comparisons, unadjusted, and was not the planned
+  test, so it is noted here and not claimed.
+- Rhythm, and rhythm and tempo combined, need a comparison that works when clans
+  share few tokens. No combined token is common to all eight clans.
+
+[Methods and results](SUMMARY.md#ordering-with-inventory-taken-out) has the
+definitions and full tables.
 
 ## What this does *not* show
 
@@ -118,6 +143,7 @@ python -m coda_recovery.predictive_info_sweep
 python -m coda_recovery.universal_structure
 python -m coda_recovery.clan_similarity
 python -m coda_recovery.drift
+python -m coda_recovery.ordering_drift
 python -m coda_recovery.ec1_pacified
 python -m coda_recovery.plain_figures
 python -m pytest
@@ -136,6 +162,7 @@ recording folds, bootstrap refitting, and cross-clan transfer.
 | [universal_structure.py](src/coda_recovery/universal_structure.py) | Leave-one-clan-out comparison |
 | [clan_similarity.py](src/coda_recovery/clan_similarity.py) | Pairwise transfer and descriptive embedding distances |
 | [drift.py](src/coda_recovery/drift.py) | Mantel tests relating Procrustes distance to lost predictability |
+| [ordering_drift.py](src/coda_recovery/ordering_drift.py) | The same question for ordering alone, with coda frequencies taken out |
 
 ## History and corrections
 

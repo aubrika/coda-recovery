@@ -156,7 +156,11 @@ def analyses(pairs, T, D, J):
     return rows
 
 
-def figure(D, L, main, partial):
+def figure(D, L, main, partial, fname="6_distance_vs_predictability.png",
+           headline="Do clans that sit further apart predict each other worse?",
+           loss_title="Predictability lost", loss_label="bits per coda, mean of both directions",
+           loss_axis="Predictability lost (bits per coda)",
+           partial_label="After accounting for coda inventory"):
     clans = CLAN_ORDER
     n = len(clans)
     off = ~np.eye(n, dtype=bool)
@@ -189,8 +193,7 @@ def figure(D, L, main, partial):
 
     heat(axes[0], D, "Purples", "Procrustes distance", "{:.2f}",
          "distance between transition embeddings")
-    heat(axes[1], L, "Blues", "Predictability lost", "{:.2f}",
-         "bits per coda, mean of both directions")
+    heat(axes[1], L, "Blues", loss_title, "{:.2f}", loss_label)
 
     ax = axes[2]
     iu = np.triu_indices(n, 1)
@@ -200,19 +203,19 @@ def figure(D, L, main, partial):
     ax.scatter(D[iu][ec1], L[iu][ec1], s=64, color=ORANGE, marker="D", edgecolor="white",
                linewidth=1.5, label="pair includes Caribbean EC1", zorder=3)
     ax.set_xlabel("Procrustes distance")
-    ax.set_ylabel("Predictability lost (bits per coda)")
+    ax.set_ylabel(loss_axis)
     ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
     ax.tick_params(colors=MUTED)
     ax.grid(True, color="#eeeeee"); ax.set_axisbelow(True)
-    ax.legend(loc="upper left", frameon=False, fontsize=10)
+    ax.legend(loc="best", frameon=False, fontsize=10)
     ax.set_title("One point per pair of clans", loc="left", fontsize=12.5, fontweight="bold",
                  color=INK, pad=38)
     ax.annotate(f"Spearman ρ = {main['rho']:+.2f}, Mantel p = {main['p_two_sided']:.3f}\n"
-                f"After accounting for coda inventory: ρ = {partial['rho']:+.2f}, p = {partial['p_two_sided']:.2f}",
+                f"{partial_label}: ρ = {partial['rho']:+.2f}, p = {partial['p_two_sided']:.2f}",
                 xy=(0, 1), xytext=(0, 6), xycoords="axes fraction", textcoords="offset points",
                 ha="left", va="bottom", fontsize=10, color=MUTED, linespacing=1.35)
 
-    fig.suptitle("Do clans that sit further apart predict each other worse?",
+    fig.suptitle(headline,
                  x=0.012, y=0.995, ha="left", fontsize=15, fontweight="bold", color=INK)
     fig.text(0.012, 0.925,
              "Left and middle: the two measures for every pair of clans, each on its own scale; darker is "
@@ -221,7 +224,7 @@ def figure(D, L, main, partial):
              ha="left", va="top", fontsize=10.5, color=MUTED, linespacing=1.35)
     fig.tight_layout(rect=(0, 0, 1, 0.86))
     FIG.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIG / "6_distance_vs_predictability.png", dpi=150, bbox_inches="tight")
+    fig.savefig(FIG / fname, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 

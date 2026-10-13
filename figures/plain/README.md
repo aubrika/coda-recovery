@@ -8,12 +8,14 @@ None is edited by hand.
 | `1_the_data_model.png` | `plain_figures` | fetched data | Coda counts by rhythm template and fixed duration bin, all eight clans pooled (23,684 codas) |
 | `2_current_predicts_next.png` | `plain_figures` | `results/predictive_info_sweep.csv` | Changes-only gains for tempo and rhythm in each clan, with 95% recording-bootstrap intervals |
 | `3_shared_vs_clan_specific.png` | `universal_structure` | fetched data | Changes-only gain of each clan's own model against a model fitted on the other seven |
-| `4_grammar_is_clan_specific.png` | `clan_similarity` | fetched data | Pairwise cross-prediction: clan A's bigram scored on clan B, all pairs including repeats |
-| `5_grammar_geometry.png` | `clan_similarity` | fetched data | Procrustes distance between clans' transition embeddings |
+| `4_cross_prediction.png` | `clan_similarity` | fetched data | Pairwise cross-prediction: clan A's bigram scored on clan B, all pairs including repeats |
+| `5_procrustes_distance.png` | `clan_similarity` | fetched data | Procrustes distance between clans' transition embeddings |
 | `6_distance_vs_predictability.png` | `drift` | fetched data | Figures 4 and 5 compared pair by pair, with exact Mantel tests |
+| `7_ordering_tempo.png` | `ordering_drift` | fetched data | Tempo, changes only, shared duration bins: Procrustes distance against ordering lost |
+| `8_ordering_rhythm.png` | `ordering_drift` | fetched data | The same for the shared rhythm classes, where clans' own gains are near zero |
 
 Figure 2 needs `predictive_info_sweep` to have run first. The numbers behind figures
-3 to 6 are saved alongside them in `results/` by the same scripts.
+3 to 8 are saved alongside them in `results/` by the same scripts.
 
 ## Checking them
 
@@ -25,10 +27,9 @@ matplotlib writes its version into the file metadata.
 
 ## Reading notes
 
-- Figures 4 and 5 keep file names from an earlier draft. They show cross-prediction
-  scores and embedding distances, and do not establish a grammar.
-- Figure 5's colour scale starts at zero, so the off-diagonal distances (0.72 to
-  1.05) all fall in its dark end. Figure 6 shows the same distances on a scale
-  fitted to that range.
+- Figures 4 and 5 show cross-prediction scores and embedding distances. Neither
+  establishes a grammar.
+- Figure 5's colour scale spans the observed distances (0.72 to 1.05), not zero
+  upward, and leaves the diagonal blank.
 - Figures 1, 3, 4 and 5 use fixed duration bins shared across clans. Figure 2 uses
   per-clan quantile bins, so its tempo scores are not comparable with theirs.

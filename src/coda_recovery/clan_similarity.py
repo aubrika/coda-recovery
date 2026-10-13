@@ -104,15 +104,24 @@ def procrustes_distances(pairs, k=EMB_K, d=EMB_D):
 
 
 def _heatmap(M, title, sub, fname, cmap, fmt="{:+.2f}", norm=None,
-             xlabel="predicted clan (B)", ylabel="model clan (A)"):
+             xlabel="predicted clan (B)", ylabel="model clan (A)", mask_diagonal=False):
     clans = CLAN_ORDER
     fig, ax = plt.subplots(figsize=(7.6, 6.6))
-    im = ax.imshow(M, cmap=cmap, norm=norm)
+    if mask_diagonal:
+        # A clan's distance to itself is zero by definition. Leaving it in would stretch
+        # the scale down to zero and push every real comparison into its dark end.
+        off = ~np.eye(len(clans), dtype=bool)
+        lo, hi = M[off].min(), M[off].max()
+        im = ax.imshow(np.where(off, M, np.nan), cmap=cmap, vmin=lo - 0.15 * (hi - lo), vmax=hi)
+    else:
+        im = ax.imshow(M, cmap=cmap, norm=norm)
     ax.set_xticks(range(len(clans))); ax.set_xticklabels(clans, fontsize=10)
     ax.set_yticks(range(len(clans))); ax.set_yticklabels(clans, fontsize=10)
     ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
     for i in range(len(clans)):
         for j in range(len(clans)):
+            if mask_diagonal and i == j:
+                continue
             v = M[i, j]
             r, g, b, _ = im.cmap(im.norm(v))      # text color from the actual cell color
             lum = 0.299 * r + 0.587 * g + 0.114 * b
@@ -173,13 +182,15 @@ def main():
              r"$\log_{2}\,P_A(\mathrm{next}\mid\mathrm{current})\;-\;\log_{2}\,F_B(\mathrm{next})$,"
              "\n"
              r"where $P_A$ = clan A's transition probability and $F_B$ = clan B's overall coda frequency.",
-             "4_grammar_is_clan_specific.png", "RdBu_r", norm=tnorm)
+             "4_cross_prediction.png", "RdBu_r", norm=tnorm)
     # Procrustes distance is sequential magnitude (0 = identical): one hue, light→dark.
     _heatmap(D, "Distances between estimated transition embeddings",
              "Each cell = Procrustes distance: the smallest ‖A·R − B‖ over rotations R, where A and B "
              "are the two clans' unit-normalized (rhythm,tempo) transition embeddings "
-             "(0 = aligned embeddings coincide; larger = more different). No significance test is applied.",
-             "5_grammar_geometry.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan")
+             "(0 = aligned embeddings coincide; larger = more different). The colour scale spans "
+             "the observed distances, not zero upward.",
+             "5_procrustes_distance.png", "Purples", fmt="{:.2f}", xlabel="clan", ylabel="clan",
+             mask_diagonal=True)
     print("\nwrote results/clan_similarity.csv, figures plain/4 & plain/5")
 
 

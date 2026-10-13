@@ -4,9 +4,9 @@
 
 **Do sperm whales put their calls in a predictable order, and is that order the same in every clan?**
 
-By Aubrey ([github.com/aubrika](https://github.com/aubrika)). A short write-up for
-researchers is in [paper/coda-order.pdf](paper/coda-order.pdf). This project is
-ongoing; [what comes next](#what-comes-next) is listed below.
+This project is
+ongoing; [what comes next](#what-comes-next) is listed below. A short write-up for
+researchers is in [paper/coda-order.pdf](paper/coda-order.pdf).
 
 Sperm whales call in short bursts of clicks, called codas. This project uses
 published recordings of eight clans of sperm whales to ask two questions. Does
@@ -15,7 +15,7 @@ one clan help to predict another?
 
 **What this project shows:** a complete analysis in Python, from raw public data to
 tested results. One set of commands rebuilds every number and figure. There are 31
-automated tests. Each method was first tried on made-up data where the right answer
+automated tests. Each method was first tried on test data where the right answer
 is known, and results were corrected when those checks failed.
 
 ## Results

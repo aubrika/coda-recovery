@@ -137,6 +137,47 @@ frequent pooled joint tokens, including smoothed cells for absent tokens.
 Distances describe fitted embeddings; a nonzero distance is not a significance
 test or proof of a distinct grammar.
 
+## Procrustes distance and lost predictability
+
+`drift` asks whether pairs of clans that sit further apart in Procrustes distance
+also predict each other worse. Predictability lost is the pairwise cross-prediction
+score above, averaged over both directions and sign-flipped, in bits per coda.
+
+Each clan appears in seven of the 28 pairs, so the pairs are not independent.
+Significance comes from a Mantel test on the Spearman correlation: clan labels are
+permuted on one matrix and the correlation recomputed. All 40,320 relabellings of
+eight clans are enumerated, so p-values are exact. They are two-sided and not
+adjusted for the number of analyses.
+
+| Analysis | Clans | Spearman ρ | p |
+|---|---:|---:|---:|
+| Distance vs predictability lost | 8 | +0.47 | 0.007 |
+| Distance vs inventory divergence | 8 | +0.58 | 0.0006 |
+| Predictability lost vs inventory divergence | 8 | +0.86 | 0.00002 |
+| Distance vs predictability lost, given inventory divergence | 8 | -0.06 | 0.77 |
+| Pacific clans only: distance vs predictability lost | 7 | +0.38 | 0.11 |
+| Pacific clans only, given inventory divergence | 7 | -0.00 | 0.99 |
+
+Inventory divergence is the Jensen-Shannon divergence between two clans' token
+frequencies. The partial correlation removes its linear fit from both rank vectors.
+
+Distance and lost predictability are associated, but inventory divergence explains
+the association. This is expected of the cross-prediction score as built: a foreign
+bigram scores a context it never saw as a uniform guess, so a clan with unfamiliar
+tokens is predicted badly whatever its ordering. The embedding is affected too,
+through smoothed cells for tokens a clan does not use.
+
+Sensitivity, all in [drift.csv](results/drift.csv):
+
+- Leaving out any one clan keeps the unadjusted correlation positive, from +0.35 to +0.65.
+- It depends on the embedding. With five or eight dimensions it ranges from +0.47 to
+  +0.80 across 10, 15 and 25 tokens. With three dimensions it ranges from -0.02 to +0.33.
+
+The hypothesis that Procrustes distance measures drift in ordering is therefore
+untested, not refuted: neither measure yet separates ordering from inventory.
+
+![Distance and lost predictability](figures/plain/6_distance_vs_predictability.png)
+
 ## Artifacts
 
 | Output | Script |
@@ -144,6 +185,7 @@ test or proof of a distinct grammar.
 | Within-clan CSV, figure 2 | `predictive_info_sweep`, then `plain_figures` |
 | Leave-one-clan-out CSV, figure 3 | `universal_structure` |
 | Pairwise CSV, figures 4 and 5 | `clan_similarity` |
+| Mantel tests, per-pair CSV, figure 6 | `drift` |
 | Native vs pooled EC1 CSV | `ec1_pacified` |
 | Token-count overview, figure 1 | `plain_figures` |
 

@@ -59,11 +59,19 @@ much predictability is preserved from one clan to another. Clans whose structure
 sit closer together should predict each other better, and clans further apart
 should predict each other worse.
 
-The repository already computes both quantities for every pair of clans:
-[pairwise cross-prediction and Procrustes distance](results/clan_similarity.csv),
-shown in figures [4](figures/plain/4_grammar_is_clan_specific.png) and
-[5](figures/plain/5_grammar_geometry.png). It does not yet test the relationship
-between them, so this is the open question, not a finding.
+A first test is in, and it does not yet support the hypothesis. Across the 28 pairs
+of clans, Procrustes distance does track how much predictability is lost between
+them (Spearman ρ = +0.47, exact Mantel p = 0.007). But both measures also track how
+different the two clans' coda inventories are, and once inventory is accounted for
+nothing is left (partial ρ = -0.06, p = 0.77). As currently built, the distance
+reflects which codas a clan uses, not separately how it orders them.
+
+![Procrustes distance and predictability lost for every pair of clans, and the two plotted against each other](figures/plain/6_distance_vs_predictability.png)
+
+Testing the hypothesis properly needs a transfer score and an embedding that are
+both insensitive to inventory, for example by restricting each comparison to the
+codas two clans share. [Methods and results](SUMMARY.md#procrustes-distance-and-lost-predictability)
+has the details and the sensitivity checks.
 
 ## What this does *not* show
 
@@ -109,6 +117,7 @@ Then run:
 python -m coda_recovery.predictive_info_sweep
 python -m coda_recovery.universal_structure
 python -m coda_recovery.clan_similarity
+python -m coda_recovery.drift
 python -m coda_recovery.ec1_pacified
 python -m coda_recovery.plain_figures
 python -m pytest
@@ -126,6 +135,7 @@ recording folds, bootstrap refitting, and cross-clan transfer.
 | [predictive_info.py](src/coda_recovery/predictive_info.py) | Model scores, grouped cross-validation, recording bootstrap |
 | [universal_structure.py](src/coda_recovery/universal_structure.py) | Leave-one-clan-out comparison |
 | [clan_similarity.py](src/coda_recovery/clan_similarity.py) | Pairwise transfer and descriptive embedding distances |
+| [drift.py](src/coda_recovery/drift.py) | Mantel tests relating Procrustes distance to lost predictability |
 
 ## History and corrections
 

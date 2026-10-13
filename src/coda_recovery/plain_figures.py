@@ -62,7 +62,7 @@ def fig_data_model():
         for row in frame.itertuples():
             if 0 <= row.rhythm < R and 0 <= row.tempo < T:
                 M[int(row.rhythm), int(row.tempo)] += 1
-    keep = M.sum(1) > 0                       # drop rhythms unused in this clan
+    keep = M.sum(1) > 0                       # drop rhythms no clan uses
     M = M[keep]
     rlabels = [f"Rhythm {i + 1}" for i in range(R) if keep[i]]
     e = TEMPO_EDGES

@@ -70,16 +70,16 @@ def cross_prediction(pairs):
     return np.array([[np.nanmean(acc[(i, j)]) for j in range(n)] for i in range(n)])
 
 
-def procrustes_distances(pairs):
+def procrustes_distances(pairs, k=EMB_K, d=EMB_D):
     cnt = Counter()
     for pr in pairs.values():
         for _, a, b in pr:
             cnt[a] += 1; cnt[b] += 1
-    index = [t for t, _ in cnt.most_common(EMB_K)]
+    index = [t for t, _ in cnt.most_common(k)]
     idx = {t: i for i, t in enumerate(index)}
     emb = {}
     for c, pr in pairs.items():
-        C = np.full((EMB_K, EMB_K), 0.5)
+        C = np.full((k, k), 0.5)
         for _, a, b in pr:
             if a in idx and b in idx:
                 C[idx[a], idx[b]] += 1
@@ -87,7 +87,7 @@ def procrustes_distances(pairs):
         pi = P.sum(1, keepdims=True); pj = P.sum(0, keepdims=True)
         PMI = np.log(P / (pi * pj))
         U, S, _ = np.linalg.svd(PMI)
-        emb[c] = U[:, :EMB_D] * np.sqrt(S[:EMB_D])
+        emb[c] = U[:, :d] * np.sqrt(S[:d])
     # Scale each embedding to unit Frobenius norm BEFORE aligning, so the distance
     # is symmetric (D[A,B] == D[B,A]) and scale-free. Dividing the residual by the
     # target's norm — as an earlier version did — broke symmetry, because clans'

@@ -1,0 +1,23 @@
+analysis,clans,pairs,rho,p_positive,p_negative,p_two_sided,permutations
+distance vs loss,8,28,0.471264,0.004142,0.995982,0.007341,40320
+distance vs inventory divergence,8,28,0.579639,0.000347,0.999678,0.00057,40320
+loss vs inventory divergence,8,28,0.855501,2.5e-05,1.0,2.5e-05,40320
+distance vs loss | inventory divergence,8,28,-0.058342,0.615129,0.384896,0.772569,40320
+Pacific only: distance vs loss,7,21,0.384416,0.055556,0.945238,0.110317,5040
+Pacific only: distance vs loss | inventory divergence,7,21,-0.002174,0.51131,0.488889,0.991865,5040
+without EC1: distance vs loss,7,21,0.384416,0.055556,0.945238,0.110317,5040
+without REG: distance vs loss,7,21,0.580519,0.006548,0.993849,0.011111,5040
+without SH: distance vs loss,7,21,0.654545,0.003175,0.997024,0.005556,5040
+without FP: distance vs loss,7,21,0.414286,0.026389,0.974603,0.049603,5040
+without PALI: distance vs loss,7,21,0.507792,0.00377,0.996429,0.004563,5040
+without PO: distance vs loss,7,21,0.357143,0.047222,0.953175,0.088492,5040
+without RI: distance vs loss,7,21,0.351948,0.028373,0.972024,0.05873,5040
+without SI: distance vs loss,7,21,0.466234,0.002381,0.997817,0.006944,5040
+embedding k=10 d=3: distance vs loss,8,28,0.331691,0.058805,0.941592,0.101538,40320
+embedding k=10 d=5: distance vs loss,8,28,0.594964,0.001166,0.998859,0.002158,40320
+embedding k=10 d=8: distance vs loss,8,28,0.506294,0.029067,0.971181,0.047197,40320
+embedding k=15 d=3: distance vs loss,8,28,-0.021894,0.526885,0.474132,0.935937,40320
+embedding k=15 d=8: distance vs loss,8,28,0.524357,0.014311,0.985838,0.024554,40320
+embedding k=25 d=3: distance vs loss,8,28,0.133552,0.251538,0.749231,0.501786,40320
+embedding k=25 d=5: distance vs loss,8,28,0.53202,0.00057,0.999479,0.000992,40320
+embedding k=25 d=8: distance vs loss,8,28,0.802408,2.5e-05,1.0,2.5e-05,40320

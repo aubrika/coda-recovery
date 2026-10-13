@@ -181,8 +181,7 @@ section rebuilds both so that it can.
 ## Ordering with inventory taken out
 
 `ordering_drift` repeats the comparison with both measures rebuilt so that coda
-frequencies cannot drive them. Its design was fixed before it was run on the data,
-and checked on synthetic sequences: a source with the same ordering but very
+frequencies cannot drive them. It was checked on synthetic sequences before use: a source with the same ordering but very
 different frequencies transfers over 90% of the gain, and a source with no ordering
 transfers none.
 
@@ -204,8 +203,9 @@ are split as in the pairwise comparison: a third held out, 15 times.
 clan's ordering, averaged over both directions. **Distance** is the Procrustes
 distance between PMI embeddings on the same shared tokens.
 
-Changes-only scoring was chosen as the primary analysis in advance, because every
-clan repeats codas.
+Changes-only scoring is treated as the primary analysis, because every clan repeats
+codas. That choice was made before these results were seen, but it was not
+registered anywhere, and the analysis as a whole followed two earlier attempts.
 
 | Feature | Scoring | Own gain, mean (range) | Foreign ordering helps | Foreign gain, mean |
 |---|---|---:|---:|---:|
@@ -249,8 +249,7 @@ All of it is in [ordering_drift.csv](results/ordering_drift.csv),
 The single-feature analysis cannot say how codas are ordered, because a coda is a
 rhythm and a tempo together and clans share too few whole coda types to compare
 their transition tables. `coda_ordering` describes each clan's ordering with a
-factored model instead. Its design and its primary analysis (changes only) were
-fixed before it was run on the data.
+factored model instead. Changes-only scoring is again the primary analysis.
 
 **Model.** Transitions are counted in a four-way table: current rhythm and tempo,
 next rhythm and tempo. A log-linear model is fitted by iterative proportional
@@ -264,13 +263,16 @@ repeat of the same coda is a structural zero.
 rescaled to B's two inventory margins. This keeps every odds ratio between current
 and next coda from A and takes every coda frequency from B. The gain is scored on
 B's held-out recordings (a third held out, 15 times) against the table with B's
-inventory and no dependence of next on current. An ordering that says nothing
-scores zero; one that is confidently different scores below zero.
+inventory and no dependence of next on current. With plentiful data, an
+ordering that says nothing scores zero and one that is confidently different scores
+below zero. At the sample sizes here, estimation noise alone also scores below zero,
+so results are read against the reference points described further down.
 
 **Checks on synthetic data**, in the test suite: a clan with the same ordering on a
 different inventory transfers over 90% of the gain; a clan with no ordering
 transfers none; unrelated orderings score below zero on average; cross terms are
-detected when present and not otherwise.
+detected when present and not otherwise. These use tens of thousands of pairs on a
+small token set, far more data per cell than any real clan has.
 
 Changes only, mean over clans, bits per changed pair:
 
@@ -297,26 +299,88 @@ Reading the tables:
 - The unfactored table over whole coda types is too sparse to estimate, and scores
   below frequencies alone on changes. The factored model is what makes the question
   answerable.
-- Cross terms do not raise a clan's own gain, and they make transfer worse.
-- On changes, tempo ordering carries over and rhythm ordering misleads. With repeats
-  included most ordering carries over, because every clan repeats codas.
-- Among the seven Pacific clans alone, another clan's whole-coda ordering helps in 5
-  of 42 comparisons on changes (mean -0.12, against +0.15 for their own).
+- Cross terms do not raise a clan's own gain, and they make transfer worse. The model
+  with rhythm-to-rhythm and tempo-to-tempo terms only ("both, no cross terms") is
+  therefore the one reported as "whole coda" in the README.
+- Zero is not the reference for "another clan's" gain. A table estimated from limited
+  data is partly noise, and noise carried to another clan costs bits. The reference
+  points are in the next section.
 
 **Intervals.** 200 replicates. Each holds out a fresh third of every clan's
 recordings and resamples the held-out recordings with replacement; models are
-refitted on the training recordings. Training recordings are not resampled: doing
-so leaves about a third fewer distinct recordings to learn from, lowers every gain,
-and produced intervals that did not contain the estimates. The intervals therefore
-cover which recordings are held out and scored, not sampling of the training set.
+refitted on the training recordings. A first version also resampled the training
+recordings. That leaves about a third fewer distinct recordings to learn from and
+lowers every gain, and its intervals did not contain the estimates, so it was
+replaced after it had been run. The intervals reported here therefore cover which
+recordings are held out and scored, not sampling of the training set. The
+within-clan sweep earlier in this document still resamples every fold, so its
+intervals are conservative and are not comparable with these.
 
-**Calibration.** To check that the analysis does not produce negative transfer by
-itself at these sample sizes, all eight clans were simulated five times from one
-ordering (a factored model fitted to all clans pooled), each on its own inventory
-and with its own recording sizes. On changes, the factored model then reports
-another clan's ordering gaining +0.41 bits against +0.56 for a clan's own, helping
-in 55 or 56 of 56 comparisons. The simulated ordering is stronger than any real
-clan's, so this shows the direction the method takes, not its exact power.
+## Reference points: no order, and one shared order
+
+`ordering_checks` runs the same analysis on data where the answer is known.
+
+**No order.** The codas inside every recording are shuffled among that recording's
+positions. Each recording keeps exactly the codas it had, links broken by gaps stay
+broken, and any order is destroyed. This separates order from differences between
+recordings in which codas they contain.
+
+Within-clan sweep, 200 shuffles per clan. A clan counts when its observed gain is
+above the 97.5th percentile of its shuffles:
+
+| Token | Scoring | Clans above their shuffles | Mean observed | Mean shuffled |
+|---|---|---:|---:|---:|
+| Tempo | all pairs | 8 of 8 | +0.36 | +0.12 |
+| Rhythm | all pairs | 8 of 8 | +0.35 | +0.05 |
+| Joint | all pairs | 8 of 8 | +0.49 | -0.04 |
+| Tempo | changes only | 8 of 8 | +0.19 | +0.07 |
+| Rhythm | changes only | 6 of 8 | +0.09 | -0.02 |
+| Joint | changes only | 8 of 8 | +0.12 | -0.14 |
+
+So the gains are not produced by recording composition alone, but about a third of
+the tempo gain is: it survives shuffling. Rhythm on changes fails in FP and PO.
+
+**One shared order.** A factored model is fitted to all clans pooled, and its
+ordering is kept as cell-wise ratios to the table with no ordering. Every recording
+is then redrawn: the ratios, raised to a power, are rescaled to that recording's own
+counts of current and next codas, and the recording's pairs are drawn from the
+result. The power is chosen so that the mean own gain of the simulated clans equals
+the observed one (0.44 for changes, 0.42 for all pairs). The simulated clans
+therefore have the real inventories, the real recording sizes and compositions, an
+ordering of realistic strength, and no difference between clans.
+
+Transfer between clans, mean over the 56 clan-to-clan comparisons, bits per pair.
+40 shuffles and 40 simulations, each scored with 5 splits; ranges are the central
+95%:
+
+| Scoring | Model | No order | Observed | One shared order | Position |
+|---|---|---:|---:|---:|---:|
+| Changes only | Tempo to tempo | +0.00 to +0.02 | +0.09 | +0.09 to +0.12 | 0.78 |
+| Changes only | Rhythm to rhythm | -0.20 to -0.16 | -0.13 | -0.08 to -0.04 | 0.40 |
+| Changes only | Both, no cross terms | -0.18 to -0.15 | -0.05 | +0.02 to +0.06 | 0.53 |
+| Changes only | Factored (all four) | -0.29 to -0.24 | -0.15 | -0.07 to -0.03 | 0.55 |
+| All pairs | Tempo to tempo | +0.04 to +0.06 | +0.26 | +0.26 to +0.30 | 0.93 |
+| All pairs | Rhythm to rhythm | -0.13 to -0.08 | +0.18 | +0.21 to +0.26 | 0.85 |
+| All pairs | Both, no cross terms | -0.11 to -0.06 | +0.32 | +0.36 to +0.41 | 0.86 |
+| All pairs | Factored (all four) | -0.22 to -0.16 | +0.24 | +0.29 to +0.35 | 0.84 |
+
+"Position" is (observed - mean with no order) / (mean with one shared order - mean
+with no order): 0 means clans share nothing, 1 means they share everything. In every
+row the observed value is above all 40 shuffles and below all 40 shared-order
+simulations.
+
+What can and cannot be said:
+
+- Another clan's ordering carries information about a clan. The negative sign of
+  some transfer gains is the cost of estimation noise, not evidence of misleading
+  structure.
+- Transfer falls short of what one shared ordering would give, most for rhythm.
+- The held-out bootstrap intervals of the observed values are wide. For "both, no
+  cross terms" on changes the interval is -0.16 to +0.02, which nearly reaches both
+  reference ranges. The position figures are point estimates and should be read as
+  rough.
+- The shared-order simulation gives every clan the same ordering strength. Real
+  clans differ, which this does not capture.
 
 **Distance.** Each clan's fitted table is rescaled to one pooled inventory, so that
 tables differ only in ordering. Standardized residuals from independence are
@@ -327,16 +391,32 @@ embedded in five dimensions and compared by Procrustes distance.
 | Changes only | +0.21 | 0.34 | +0.13 | 0.55 |
 | All pairs | +0.49 | 0.036 | +0.35 | 0.14 |
 
-The planned comparison shows no relationship. Ordering lost still rises with
-inventory divergence (ρ = +0.70 on changes), so clans that use different codas
-also order them differently, or are harder to compare; this analysis cannot tell
-which. The Caribbean clan accounts for the largest losses.
+The planned comparison shows no relationship, and the next check shows why this
+test could not have found one.
+
+**Noise floor.** Each clan's recordings were split into random halves 20 times, and
+the distance between the two halves computed in the same way:
+
+| Scoring | Two halves of one clan, mean (range) | Two different clans, mean (range) |
+|---|---:|---:|
+| Changes only | 0.85 (0.66 to 1.02) | 0.94 (0.83 to 1.06) |
+| All pairs | 0.77 (0.44 to 0.97) | 0.87 (0.72 to 1.02) |
+
+Halves carry half the data and so are noisier than whole clans, but the overlap is
+large: the distance is dominated by estimation noise. The Mantel result above is
+therefore uninformative, not negative. The distance and the lost-predictability
+score are also both computed from the same transition tables, so agreement between
+them would not by itself show that either tracks divergence. That needs an outside
+measure, such as how much two clans overlap in space.
 
 Outputs: [coda_ordering.csv](results/coda_ordering.csv),
 [coda_ordering_models.csv](results/coda_ordering_models.csv),
 [coda_ordering_bootstrap.csv](results/coda_ordering_bootstrap.csv),
-[coda_ordering_shared_null.csv](results/coda_ordering_shared_null.csv) and
-[coda_ordering_pairs.csv](results/coda_ordering_pairs.csv).
+[coda_ordering_pairs.csv](results/coda_ordering_pairs.csv),
+[shuffle_null_within.csv](results/shuffle_null_within.csv),
+[ordering_checks.csv](results/ordering_checks.csv),
+[distance_noise_floor.csv](results/distance_noise_floor.csv) and
+[data_table.csv](results/data_table.csv).
 
 ![Whole-coda ordering](figures/plain/9_ordering_coda.png)
 
@@ -349,7 +429,9 @@ Outputs: [coda_ordering.csv](results/coda_ordering.csv),
 | Pairwise CSV, figures 4 and 5 | `clan_similarity` |
 | Mantel tests, per-pair CSV, figure 6 | `drift` |
 | Ordering-only transfer and Mantel tests, figures 7 and 8 | `ordering_drift` |
-| Whole-coda factored model, transfer, intervals, calibration, figure 9 | `coda_ordering` |
+| Whole-coda factored model, transfer, intervals, figure 9 | `coda_ordering` |
+| Shuffle and shared-order reference points, distance noise floor, figure 10 | `ordering_checks` |
+| Sample sizes per clan | `describe` |
 | Native vs pooled EC1 CSV | `ec1_pacified` |
 | Token-count overview, figure 1 | `plain_figures` |
 

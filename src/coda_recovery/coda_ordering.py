@@ -219,59 +219,38 @@ def bootstrap(pairs, changes, replicates=200, seed=0):
     return out
 
 
-def shared_ordering_null(pairs, sims=5, seed=0):
-    """What the analysis reports when every clan truly has the same ordering.
-
-    One factored model is fitted to all clans pooled and put on each clan's own
-    inventory. Each clan's recordings are then redrawn from it, keeping every
-    recording's number of pairs. Returns simulated datasets in the format of `pairs`.
-    """
-    R, T = shape_of(pairs)
-    tables = {c: count_table(pairs[c], R, T) for c in CLAN_ORDER}
-    shared = fit_model(sum(tables.values()), False, MODELS["factored"])
-    rng = np.random.default_rng(seed)
-    cells = [((r, t), (r2, t2)) for r in range(R) for t in range(T) for r2 in range(R) for t2 in range(T)]
-    out = []
-    for _ in range(sims):
-        sim = {}
-        for c in CLAN_ORDER:
-            truth = with_inventory(shared, smoothed(tables[c], False)).ravel()
-            truth = truth / truth.sum()
-            sizes = {}
-            for u, _, _ in pairs[c]:
-                sizes[u] = sizes.get(u, 0) + 1
-            sim[c] = [(u, *cells[i]) for u, k in sizes.items() for i in rng.choice(len(cells), k, p=truth)]
-        out.append(sim)
-    return out
-
-
 def ordering_lost(G):
     """Own gain minus the gain from the other clan's ordering, averaged both ways."""
     lost = np.diag(G)[None, :] - G
     return (lost + lost.T) / 2
 
 
-def ordering_distance(pairs, changes, d=EMB_D):
-    """Procrustes distance between clans' ordering, each put on the pooled inventory."""
-    R, T = shape_of(pairs)
+def ordering_embeddings(tables, pooled, changes, d=EMB_D):
+    """Unit-norm embedding of each table's ordering, after putting it on the pooled inventory."""
+    R, T = pooled.shape[:2]
     k = R * T
-    tables = {c: count_table(pairs[c], R, T) for c in CLAN_ORDER}
-    pooled = smoothed(sum(tables.values()), changes)
     independent = fit(pooled, INVENTORY, allowed(R, T, changes)).reshape(k, k)
     emb = {}
-    for c in CLAN_ORDER:
-        M = with_inventory(fit_model(tables[c], changes, MODELS["factored"]), pooled).reshape(k, k)
+    for name, N in tables.items():
+        M = with_inventory(fit_model(N, changes, MODELS["factored"]), pooled).reshape(k, k)
         S = np.divide(M - independent, np.sqrt(independent), out=np.zeros_like(M), where=independent > 0)
         U, sv, _ = np.linalg.svd(S)
         e = U[:, :d] * np.sqrt(sv[:d])
-        emb[c] = e / np.linalg.norm(e)
-    n = len(CLAN_ORDER)
-    D = np.zeros((n, n))
-    for i, a in enumerate(CLAN_ORDER):
-        for j, b in enumerate(CLAN_ORDER):
-            Rot, _ = orthogonal_procrustes(emb[a], emb[b])
-            D[i, j] = np.linalg.norm(emb[a] @ Rot - emb[b])
-    return D
+        emb[name] = e / np.linalg.norm(e)
+    return emb
+
+
+def procrustes(a, b):
+    Rot, _ = orthogonal_procrustes(a, b)
+    return float(np.linalg.norm(a @ Rot - b))
+
+
+def ordering_distance(pairs, changes, d=EMB_D):
+    """Procrustes distance between clans' ordering, each put on the pooled inventory."""
+    R, T = shape_of(pairs)
+    tables = {c: count_table(pairs[c], R, T) for c in CLAN_ORDER}
+    emb = ordering_embeddings(tables, smoothed(sum(tables.values()), changes), changes, d)
+    return np.array([[procrustes(emb[a], emb[b]) for b in CLAN_ORDER] for a in CLAN_ORDER])
 
 
 def main():
@@ -280,8 +259,7 @@ def main():
     off = ~np.eye(n, dtype=bool)
     pacific = [i for i, c in enumerate(CLAN_ORDER) if c != "EC1"]
     J = inventory_divergence(pairs)
-    tests, model_rows, pair_rows, boot_rows, null_rows, primary = [], [], [], [], [], None
-    simulated = shared_ordering_null(pairs)
+    tests, model_rows, pair_rows, boot_rows, primary = [], [], [], [], None
 
     for changes in (True, False):
         scoring = "changes only" if changes else "all pairs"
@@ -329,15 +307,6 @@ def main():
                               round(float(np.mean(foreign_b < 0)), 4), *np.percentile(b["helped"], [2.5, 97.5]).astype(int)])
             print(f"  {m:<22} 95% intervals: own {q(own_b)}, another clan's {q(foreign_b)}, "
                   f"difference {q(own_b - foreign_b)}")
-        null = [evaluate(sim, changes, nrep=5)[0] for sim in simulated]
-        for m in MODELS:
-            own_n = [np.diag(g[m]).mean() for g in null]
-            foreign_n = [g[m][off].mean() for g in null]
-            helped_n = [int((g[m][off] > 0).sum()) for g in null]
-            null_rows.append([scoring, m, len(null), round(float(np.mean(own_n)), 4), round(float(np.mean(foreign_n)), 4),
-                              round(float(min(foreign_n)), 4), round(float(max(foreign_n)), 4), min(helped_n), max(helped_n)])
-            print(f"  {m:<22} if ordering were shared: own {np.mean(own_n):+.3f}, another clan's "
-                  f"{np.mean(foreign_n):+.3f} ({min(foreign_n):+.3f} to {max(foreign_n):+.3f}), helps in {min(helped_n)}-{max(helped_n)}")
         print(f"  distance vs ordering lost: rho={main_test['rho']:+.3f} p={main_test['p_two_sided']:.4f}; "
               f"given inventory divergence: rho={given['rho']:+.3f} p={given['p_two_sided']:.4f}")
         if changes:
@@ -358,11 +327,6 @@ def main():
                     "own_minus_foreign_lo", "own_minus_foreign_hi", "share_of_replicates_foreign_below_zero",
                     "helped_lo", "helped_hi"])
         w.writerows(boot_rows)
-    with (OUT / "coda_ordering_shared_null.csv").open("w", newline="") as f:
-        w = csv.writer(f, lineterminator="\n")
-        w.writerow(["scoring", "model", "simulations", "own_mean", "foreign_mean", "foreign_min", "foreign_max",
-                    "helped_min", "helped_max"])
-        w.writerows(null_rows)
     with (OUT / "coda_ordering_pairs.csv").open("w", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["scoring", "source", "target", "transfer_gain_bits", "transfer_gain_sd_over_splits",
@@ -380,7 +344,8 @@ def main():
         "y": "Worse than the clan's own order by\n(bits per pair of codas)",
         "control": "which codas each clan uses",
     })
-    print("\nwrote results/coda_ordering.csv, coda_ordering_models.csv, coda_ordering_pairs.csv, figure 9")
+    print("\nwrote results/coda_ordering.csv, coda_ordering_models.csv, coda_ordering_bootstrap.csv, "
+          "coda_ordering_pairs.csv, figure 9")
 
 
 if __name__ == "__main__":

@@ -14,9 +14,10 @@ None is edited by hand.
 | `7_ordering_tempo.png` | `ordering_drift` | fetched data | Tempo alone, pairs where the tempo changes: how different two clans are in which tempo follows which, against how much worse one predicts the other than itself |
 | `8_ordering_rhythm.png` | `ordering_drift` | fetched data | The same for rhythm alone. Clans' own rhythm order predicts little here, so this figure mostly shows noise |
 | `9_ordering_coda.png` | `coda_ordering` | fetched data | Whole codas, pairs where the coda changes: how different two clans' order of codas is, against how much worse one predicts the other than itself |
+| `10_order_shared_between_clans.png` | `ordering_checks` | `results/coda_ordering_bootstrap.csv` and fetched data | What was measured when one clan's order predicts another, between the result for shuffled recordings and for one shared order |
 
 Figure 2 needs `predictive_info_sweep` to have run first. The numbers behind figures
-3 to 9 are saved alongside them in `results/` by the same scripts.
+3 to 10 are saved alongside them in `results/` by the same scripts.
 
 ## Checking them
 
@@ -32,5 +33,8 @@ matplotlib writes its version into the file metadata.
   establishes a grammar.
 - Figure 5's colour scale spans the observed distances (0.72 to 1.05), not zero
   upward, and leaves the diagonal blank.
+- Figures 6 to 9 use a Procrustes distance that later proved to be mostly noise at
+  these sample sizes (two halves of one clan are almost as far apart as two clans).
+  They are kept as a record of the test, not as evidence about clans.
 - Figures 1, 3, 4 and 5 use fixed duration bins shared across clans. Figure 2 uses
   per-clan quantile bins, so its tempo scores are not comparable with theirs.

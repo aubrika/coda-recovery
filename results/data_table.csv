@@ -1,0 +1,9 @@
+clan,ocean,codas,recordings,pairs,pairs_where_coda_changes,share_repeats,coda_types_used,tempo_changes,share_of_tempo_changes_to_neighbouring_bin,same_share_expected_from_frequency_alone
+EC1,Caribbean,3673,217,3456,1609,0.534,61,1016,0.644,0.346
+REG,Pacific,7572,45,7348,4177,0.432,58,2621,0.568,0.379
+SH,Pacific,4318,40,4101,2732,0.334,78,2008,0.594,0.52
+FP,Pacific,1867,17,1834,977,0.467,60,657,0.481,0.319
+PALI,Pacific,1844,12,1791,1286,0.282,69,745,0.813,0.749
+PO,Pacific,1933,14,1795,1339,0.254,43,753,0.482,0.416
+RI,Pacific,1301,15,1220,916,0.249,60,539,0.666,0.627
+SI,Pacific,1176,15,1112,766,0.311,38,575,0.737,0.475

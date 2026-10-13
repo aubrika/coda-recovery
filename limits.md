@@ -52,17 +52,41 @@ models. They condition on folds, labels, and vocabulary, assume recording
 independence, and do not cover model-selection uncertainty. No multiple-comparison
 adjustment is applied. Near-zero endpoints should not be treated as decisive.
 
-Transfer scores have no uncertainty intervals. Failure to transfer may reflect
-inventory differences, sparse support, unequal sample sizes, or collection
-methods, as well as transition differences. The descriptive Procrustes comparison
-does not isolate biology or supply a significance test.
+The leave-one-clan-out and pairwise cross-prediction scores have no uncertainty
+intervals and carry the source clans' inventory with them, so failure to transfer
+there mostly reflects inventory differences.
+
+The whole-coda transfer scores remove inventory and have held-out bootstrap
+intervals, but those intervals cover only which recordings are scored. They are
+read against two reference points, shuffled recordings and a simulated shared
+ordering, and the second of these assumes every clan has the same ordering
+strength. Transfer estimated from limited data scores below zero through noise
+alone, so the sign of a transfer score means nothing without those references.
+
+The Procrustes distance between clans is close to the distance between two halves
+of one clan. At these sample sizes it is dominated by estimation noise, and the
+Mantel tests built on it are uninformative. The distance and the transfer scores
+also come from the same transition tables; neither has been compared with an
+outside measure such as spatial overlap or relatedness.
+
+The Caribbean clan is 11 tagged whales. Its estimates describe those animals and
+their social units, and its recordings are repeated samples of the same
+individuals, not independent draws from a clan.
+
+Adjacent codas are pooled across whales with no limit on the time between them.
+Part of what is called order here may be exchange between whales (overlapping,
+matching, turn-taking) and not an individual's sequencing.
 
 ## What remains to check
 
 Useful follow-ups include training-only duration bins, alternate rhythm
 representations, smoothing sensitivity, matched recording protocols, and
-independent replication. A separate shuffled or simulated control that preserves
-recording composition would help distinguish local context from sequential
-dependence.
+independent replication. The shuffled control that preserves recording
+composition has now been run (see SUMMARY.md, "Reference points").
+
+Still to do: an analysis of the Pacific clans alone using the source study's own
+coda types; a time limit on what counts as adjacent; separate treatment of identity
+and non-identity codas; and a comparison of any clan-to-clan measure with spatial
+overlap between clans.
 
 Nothing here establishes meaning, syntax, a translation, or a species-wide rule.

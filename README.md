@@ -174,34 +174,20 @@ See [limitations](limits.md) for the full list.
 
 ## What comes next
 
-This project is not finished. The steps below are in the order planned. Each one
-answers a weakness listed above.
+This project is ongoing. The next steps, in order:
 
-- [ ] **Look at the Pacific clans alone, with their own coda types.** The seven
-  Pacific clans were recorded in the same way, and the study they come from already
-  sorted their codas into types. Using those types avoids forcing Pacific codas into
-  Caribbean classes, and avoids comparing two oceans recorded by different methods.
-- [ ] **Compare shared order with how much clans meet.** The numbers here all come
-  from the same recordings, so they cannot check each other. The source study
-  measured how much each pair of Pacific clans overlaps in space. The question is
-  whether clans that overlap more share more of their order, or less.
-- [ ] **Separate the codas that mark a clan from the rest.** Earlier work found that
-  clans living in the same waters differ more in their "identity" codas, and less in
-  the others. Order may behave differently for the two kinds.
-- [ ] **Separate one whale's sequence from whales answering each other.** The
-  Caribbean data say which whale made each coda, and when. That allows a time limit
-  between codas, and a comparison of order within one whale and between whales.
-- [ ] **Check whether shared tempo order is just gradual change.** Use the measured
-  length of each coda instead of five length groups, and see what is left once
-  gradual change is accounted for.
-- [ ] **Make the uncertainty more complete.** The intervals should also cover the
-  recordings the models are built from, and the "one shared order" simulation should
-  let clans differ in how strong their order is.
-- [ ] **Find a distance that is more than noise, or drop the idea.** Any new measure
-  has to pass the same test: two halves of one clan must come out clearly closer
-  than two different clans.
-- [ ] **Ask a researcher in the field to review the write-up,** and correct what
-  they find.
+- [ ] **Pacific clans alone, with their own coda types.** The seven Pacific clans
+  were recorded in the same way and already have their own coda types, which makes
+  for a cleaner comparison than mixing two oceans.
+- [ ] **Shared order against how much clans meet.** Do clans that live in the same
+  waters share more of their order, or less? This brings in a measure from outside
+  the recordings, which the current results lack.
+- [ ] **One whale's sequence against whales answering each other.** The Caribbean
+  data say which whale made each coda, and when, so the two can be told apart.
+- [ ] **Tempo as a measured length, not five groups,** to see how much of the shared
+  tempo order is simply gradual change.
+- [ ] **A distance that is more than noise.** Any new measure has to put two halves
+  of one clan clearly closer together than two different clans.
 
 ## Reproduce
 

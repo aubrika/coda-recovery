@@ -44,6 +44,27 @@ recording. The transfer figures are point estimates without intervals.
 [Methods and results](SUMMARY.md) has the definitions, the full tables and the
 combined rhythm-and-tempo results.
 
+### What this may suggest
+
+Read tentatively, these results suggest that each clan's coda sequences have a
+largely clan-specific structure: order is predictive within a clan, but a model of
+one clan's ordering says little about another's. Poor transfer can have other
+causes too, such as different coda inventories, sparse counts and different
+recording methods, so this is a reading of the results and not a conclusion.
+
+That reading sets up the hypothesis this project is working toward: can the
+Procrustes distance between two clans' sequence structures serve as a proxy for a
+kind of "linguistic drift" between them? If it can, the distance should track how
+much predictability is preserved from one clan to another. Clans whose structures
+sit closer together should predict each other better, and clans further apart
+should predict each other worse.
+
+The repository already computes both quantities for every pair of clans:
+[pairwise cross-prediction and Procrustes distance](results/clan_similarity.csv),
+shown in figures [4](figures/plain/4_grammar_is_clan_specific.png) and
+[5](figures/plain/5_grammar_geometry.png). It does not yet test the relationship
+between them, so this is the open question, not a finding.
+
 ## What this does *not* show
 
 - **Nothing about meaning or syntax.** This measures prediction of recorded token

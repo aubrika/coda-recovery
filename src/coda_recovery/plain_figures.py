@@ -113,16 +113,18 @@ def fig_changes():
                     solid_capstyle="round", zorder=2)
             ax.plot(r.gain_transition, yi + dy, "o", color=col, ms=8, zorder=3)
     ax.set_yticks(y); ax.set_yticklabels([CLAN_LABEL[c] for c in clans], fontsize=11)
-    ax.set_xlabel("Held-out log-likelihood gain (bits per changed pair)")
+    ax.set_xlabel("How much knowing the current coda improves the prediction of the next one\n"
+                  "(bits per pair of codas; right of the line = it helps)")
     _dress(ax); ax.xaxis.grid(True, color="#eeeeee")
-    _titles(ax, "Predicting the next token when the token changes",
-            "Bigram versus frequency baseline, both conditioned on a change. Lines show 95% "
-            "recording-bootstrap intervals with model refitting; several overlap zero.", wrap=95)
+    _titles(ax, "Does the current coda help to predict the next one, when the coda changes?",
+            "A coda is one whale call: a short burst of clicks. Each row is one clan of whales. The dot is "
+            "the measured value and the line is its 95% interval. Where a line crosses zero, the data cannot "
+            "show that the current coda helps. Repeats of the same coda are left out.", wrap=95)
     from matplotlib.lines import Line2D
     ax.legend(handles=[Line2D([0], [0], marker="o", color="w", markerfacecolor=BLUE,
-                              markersize=9, label="Tempo (duration)"),
+                              markersize=9, label="Tempo (how long the coda lasts)"),
                        Line2D([0], [0], marker="o", color="w", markerfacecolor=ORANGE,
-                              markersize=9, label="Rhythm (click pattern)")],
+                              markersize=9, label="Rhythm (the pattern of its clicks)")],
               loc="lower right", frameon=True, facecolor="white", edgecolor="none", fontsize=10.5)
     fig.tight_layout()
     FIG.mkdir(parents=True, exist_ok=True)

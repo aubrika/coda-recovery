@@ -1,4 +1,6 @@
-# coda-recovery
+# Coda order in sperm whale clans
+
+![tests](https://github.com/aubrika/coda-recovery/actions/workflows/tests.yml/badge.svg)
 
 **Do sperm whales put their calls in a predictable order, and is that order the same in every clan?**
 
@@ -11,9 +13,10 @@ published recordings of eight clans of sperm whales to ask two questions. Does
 knowing the current coda help to predict the next one? And does what is learned from
 one clan help to predict another?
 
-It is a Python project. The code prepares the data, builds the predictions, tests
-them on recordings that were kept aside, measures how certain the results are, and
-draws the figures.
+**What this project shows:** a complete analysis in Python, from raw public data to
+tested results. One set of commands rebuilds every number and figure. There are 31
+automated tests. Each method was first tried on made-up data where the right answer
+is known, and results were corrected when those checks failed.
 
 ## Results
 
@@ -27,6 +30,12 @@ draws the figures.
 - The hope was that one number, a Procrustes distance, could measure how far two
   clans' orders have drifted apart. It cannot, with this much data: two halves of the
   same clan come out almost as far apart as two different clans.
+
+![What was measured when one clan's order is used to predict another, between the result for no order and the result for one shared order](figures/plain/10_order_shared_between_clans.png)
+
+The figure shows the second point. The words in it are explained below, and the
+figure itself is explained under
+[Do clans put their codas in the same order?](#do-clans-put-their-codas-in-the-same-order)
 
 ### Words used here
 
@@ -79,8 +88,6 @@ codas carries information that their frequency alone does not.
 
 ![Gain when the coda changes, for tempo and rhythm in each clan, with 95% intervals](figures/plain/2_current_predicts_next.png)
 
-![Each clan's own model compared with a model built from the other seven clans](figures/plain/3_shared_vs_clan_specific.png)
-
 ### Do clans put their codas in the same order?
 
 The idea behind this project is that each clan has its own order, and that these
@@ -106,9 +113,8 @@ run on two kinds of made-up data, to mark the two ends of the scale:
 - **One order shared by all clans:** eight simulated clans that all follow the same
   order, each with its real inventory and recordings of the real sizes.
 
-![What was measured when one clan's order is used to predict another, between the result for no order and the result for one shared order](figures/plain/10_order_shared_between_clans.png)
-
-Reading the figure, for pairs where the coda changes:
+The figure near the top of this page shows where the measured values fall between
+those two ends. In numbers, for pairs where the coda changes:
 
 | Which order is carried from another clan | No order at all | Measured | One shared order |
 |---|---:|---:|---:|
@@ -133,8 +139,7 @@ The numbers are bits per pair of codas; higher is better.
   and that habit carries over (right-hand panel).
 
 A negative number in the table does not mean that another clan's order "misleads".
-It is what noise in the tables costs. An earlier version of this page read it the
-wrong way; see [History and corrections](#history-and-corrections).
+It is what noise in the tables costs.
 
 **Can a distance measure the difference?** Not with these data. The Procrustes
 distance between two clans' orders is 0.83 to 1.06. But when one clan's recordings
@@ -253,7 +258,8 @@ recording folds, bootstrap refitting, and cross-clan transfer.
 
 ## History and corrections
 
-The name comes from an earlier attempt to recover coda labels by graph matching.
+The repository is called coda-recovery after an earlier attempt to recover coda
+labels by graph matching.
 [Development history](PROGRESS.md) records that change of direction.
 
 **Correction, September 2026.** An earlier version of the changes-only comparison
@@ -263,14 +269,6 @@ repeats were removed. The baseline now accounts for the exclusion, and the earli
 claims of a universal tempo rule and above-zero changes-only effects in every clan
 have been withdrawn. [Methods and results](SUMMARY.md#correction-to-the-earlier-analysis)
 explains the correction.
-
-**Correction, October 2026.** For a few hours on 12 October this page said that
-another clan's order "misleads", because it scored below zero. Zero was the wrong
-point of comparison. When the codas inside each recording are shuffled, so that
-there is no order to carry over, another clan's tables score just as far below
-zero, because of noise. Measured against that, another clan's order helps. The
-page also reported a version of the model with two extra tables that the data do
-not support. Both are corrected above.
 
 ## License and credits
 

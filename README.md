@@ -3,7 +3,8 @@
 **Do sperm whales put their calls in a predictable order, and is that order the same in every clan?**
 
 By Aubrey ([github.com/aubrika](https://github.com/aubrika)). A short write-up for
-researchers is in [paper/coda-order.pdf](paper/coda-order.pdf).
+researchers is in [paper/coda-order.pdf](paper/coda-order.pdf). This project is
+ongoing; [what comes next](#what-comes-next) is listed below.
 
 Sperm whales call in short bursts of clicks, called codas. This project uses
 published recordings of eight clans of sperm whales to ask two questions. Does
@@ -170,6 +171,37 @@ Things to keep in mind:
   collected differently, and shared processing does not remove those differences.
 
 See [limitations](limits.md) for the full list.
+
+## What comes next
+
+This project is not finished. The steps below are in the order planned. Each one
+answers a weakness listed above.
+
+- [ ] **Look at the Pacific clans alone, with their own coda types.** The seven
+  Pacific clans were recorded in the same way, and the study they come from already
+  sorted their codas into types. Using those types avoids forcing Pacific codas into
+  Caribbean classes, and avoids comparing two oceans recorded by different methods.
+- [ ] **Compare shared order with how much clans meet.** The numbers here all come
+  from the same recordings, so they cannot check each other. The source study
+  measured how much each pair of Pacific clans overlaps in space. The question is
+  whether clans that overlap more share more of their order, or less.
+- [ ] **Separate the codas that mark a clan from the rest.** Earlier work found that
+  clans living in the same waters differ more in their "identity" codas, and less in
+  the others. Order may behave differently for the two kinds.
+- [ ] **Separate one whale's sequence from whales answering each other.** The
+  Caribbean data say which whale made each coda, and when. That allows a time limit
+  between codas, and a comparison of order within one whale and between whales.
+- [ ] **Check whether shared tempo order is just gradual change.** Use the measured
+  length of each coda instead of five length groups, and see what is left once
+  gradual change is accounted for.
+- [ ] **Make the uncertainty more complete.** The intervals should also cover the
+  recordings the models are built from, and the "one shared order" simulation should
+  let clans differ in how strong their order is.
+- [ ] **Find a distance that is more than noise, or drop the idea.** Any new measure
+  has to pass the same test: two halves of one clan must come out clearly closer
+  than two different clans.
+- [ ] **Ask a researcher in the field to review the write-up,** and correct what
+  they find.
 
 ## Reproduce
 

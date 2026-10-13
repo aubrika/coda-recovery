@@ -368,10 +368,18 @@ def main():
         w.writerow(["scoring", "source", "target", "transfer_gain_bits", "transfer_gain_sd_over_splits",
                     "ordering_distance", "ordering_lost_bits", "inventory_js_bits"])
         w.writerows(pair_rows)
-    figure(*primary, fname="9_ordering_coda.png",
-           headline="Whole codas: do clans whose ordering sits further apart share less of it?",
-           loss_title="Ordering lost", loss_label="bits per changed pair, mean of both directions",
-           loss_axis="Ordering lost (bits per changed pair)")
+    figure(*primary, fname="9_ordering_coda.png", text={
+        "headline": "Whole codas: do clans with a more different order of codas predict each other worse?",
+        "left": "how different the two clans are in which coda tends to follow which, after setting aside "
+                "that they use different codas.",
+        "middle": "how much worse a clan's next coda is predicted when the other clan's order is used instead "
+                  "of its own. Only pairs where the coda changes are counted.",
+        "left_title": "How different is the order of codas?",
+        "middle_title": "How much worse than a clan's own order?",
+        "middle_scale": "bits per pair of codas (higher = worse; 0 = just as good)",
+        "y": "Worse than the clan's own order by\n(bits per pair of codas)",
+        "control": "which codas each clan uses",
+    })
     print("\nwrote results/coda_ordering.csv, coda_ordering_models.csv, coda_ordering_pairs.csv, figure 9")
 
 

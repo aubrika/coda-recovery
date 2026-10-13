@@ -11,9 +11,9 @@ None is edited by hand.
 | `4_cross_prediction.png` | `clan_similarity` | fetched data | Pairwise cross-prediction: clan A's bigram scored on clan B, all pairs including repeats |
 | `5_procrustes_distance.png` | `clan_similarity` | fetched data | Procrustes distance between clans' transition embeddings |
 | `6_distance_vs_predictability.png` | `drift` | fetched data | Figures 4 and 5 compared pair by pair, with exact Mantel tests |
-| `7_ordering_tempo.png` | `ordering_drift` | fetched data | Tempo, changes only, shared duration bins: Procrustes distance against ordering lost |
-| `8_ordering_rhythm.png` | `ordering_drift` | fetched data | The same for the shared rhythm classes, where clans' own gains are near zero |
-| `9_ordering_coda.png` | `coda_ordering` | fetched data | Whole codas, changes only, factored model: Procrustes distance between clans' ordering against ordering lost |
+| `7_ordering_tempo.png` | `ordering_drift` | fetched data | Tempo alone, pairs where the tempo changes: how different two clans are in which tempo follows which, against how much worse one predicts the other than itself |
+| `8_ordering_rhythm.png` | `ordering_drift` | fetched data | The same for rhythm alone. Clans' own rhythm order predicts little here, so this figure mostly shows noise |
+| `9_ordering_coda.png` | `coda_ordering` | fetched data | Whole codas, pairs where the coda changes: how different two clans' order of codas is, against how much worse one predicts the other than itself |
 
 Figure 2 needs `predictive_info_sweep` to have run first. The numbers behind figures
 3 to 9 are saved alongside them in `results/` by the same scripts.

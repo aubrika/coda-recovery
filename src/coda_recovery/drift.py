@@ -156,17 +156,32 @@ def analyses(pairs, T, D, J):
     return rows
 
 
-def figure(D, L, main, partial, fname="6_distance_vs_predictability.png",
-           headline="Do clans that sit further apart predict each other worse?",
-           loss_title="Predictability lost", loss_label="bits per coda, mean of both directions",
-           loss_axis="Predictability lost (bits per coda)",
-           partial_label="After accounting for coda inventory"):
+FIGURE_TEXT = {
+    "headline": "Do clans with more different coda patterns predict each other worse?",
+    "left": "how different the two clans' patterns are (a pattern is which coda tends to follow which).",
+    "middle": "how badly one clan's pattern predicts the other clan's next coda.",
+    "left_title": "How different are the two clans?",
+    "middle_title": "How badly does one predict the other?",
+    "middle_scale": "bits per coda (higher = worse prediction)",
+    "y": "How badly one clan predicts the other\n(bits per coda; higher = worse)",
+    "control": "which codas each clan uses",
+}
+
+
+def _plain(result):
+    """A correlation and its p-value in words a newcomer can read."""
+    p = result["p_two_sided"]
+    chance = "unlikely to be chance" if p < 0.05 else "could easily be chance"
+    return f"ρ = {result['rho']:+.2f} (p = {p:.3f}, {chance})"
+
+
+def figure(D, L, main, partial, fname="6_distance_vs_predictability.png", text=FIGURE_TEXT):
+    """Two heatmaps and a scatter: how different each pair of clans is, how badly they
+    predict each other, and one against the other. `text` supplies every label."""
     clans = CLAN_ORDER
     n = len(clans)
     off = ~np.eye(n, dtype=bool)
-    fig, axes = plt.subplots(1, 3, figsize=(17, 5.9), gridspec_kw={"width_ratios": [1, 1, 0.95]})
-    for ax in axes[:2]:
-        ax.set_anchor("S")
+    fig, axes = plt.subplots(1, 3, figsize=(18, 8.6), gridspec_kw={"width_ratios": [1, 1, 0.9]})
 
     def heat(ax, M, cmap, title, fmt, label):
         shown = np.where(off, M, np.nan)
@@ -187,42 +202,46 @@ def figure(D, L, main, partial, fname="6_distance_vs_predictability.png",
                 ax.text(j, i, fmt.format(M[i, j]), ha="center", va="center", fontsize=8.5,
                         color="white" if dark else INK)
         ax.set_title(title, loc="left", fontsize=12.5, fontweight="bold", color=INK, pad=10)
-        cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        cb.set_label(label, color=MUTED, fontsize=10)
+        ax.set_xlabel(label, color=MUTED, fontsize=10, labelpad=8)
+        cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
         cb.outline.set_visible(False)
 
-    heat(axes[0], D, "Purples", "Procrustes distance", "{:.2f}",
-         "distance between transition embeddings")
-    heat(axes[1], L, "Blues", loss_title, "{:.2f}", loss_label)
+    heat(axes[0], D, "Purples", text["left_title"], "{:.2f}",
+         "Procrustes distance (0 = identical; higher = more different)")
+    axes[2].set_box_aspect(1)
+    heat(axes[1], L, "Blues", text["middle_title"], "{:.2f}", text["middle_scale"])
 
     ax = axes[2]
     iu = np.triu_indices(n, 1)
     ec1 = np.array([clans[i] == "EC1" or clans[j] == "EC1" for i, j in zip(*iu)])
     ax.scatter(D[iu][~ec1], L[iu][~ec1], s=64, color=BLUE, edgecolor="white", linewidth=1.5,
-               label="two Pacific clans", zorder=3)
+               label="both clans are from the Pacific", zorder=3)
     ax.scatter(D[iu][ec1], L[iu][ec1], s=64, color=ORANGE, marker="D", edgecolor="white",
-               linewidth=1.5, label="pair includes Caribbean EC1", zorder=3)
-    ax.set_xlabel("Procrustes distance")
-    ax.set_ylabel(loss_axis)
+               linewidth=1.5, label="one clan is the Caribbean clan (EC1)", zorder=3)
+    ax.set_xlabel("How different the two clans are (Procrustes distance)")
+    ax.set_ylabel(text["y"])
     ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
     ax.tick_params(colors=MUTED)
     ax.grid(True, color="#eeeeee"); ax.set_axisbelow(True)
-    ax.legend(loc="best", frameon=False, fontsize=10)
-    ax.set_title("One point per pair of clans", loc="left", fontsize=12.5, fontweight="bold",
-                 color=INK, pad=38)
-    ax.annotate(f"Spearman ρ = {main['rho']:+.2f}, Mantel p = {main['p_two_sided']:.3f}\n"
-                f"{partial_label}: ρ = {partial['rho']:+.2f}, p = {partial['p_two_sided']:.2f}",
+    ax.legend(loc="upper left", bbox_to_anchor=(0, -0.1), frameon=False, fontsize=10)
+    ax.set_title("Each dot is one pair of clans", loc="left", fontsize=12.5, fontweight="bold",
+                 color=INK, pad=52)
+    ax.annotate(f"Strength of the relationship: {_plain(main)}\n"
+                f"After removing the effect of {text['control']}:\n{_plain(partial)}",
                 xy=(0, 1), xytext=(0, 6), xycoords="axes fraction", textcoords="offset points",
                 ha="left", va="bottom", fontsize=10, color=MUTED, linespacing=1.35)
 
-    fig.suptitle(headline,
-                 x=0.012, y=0.995, ha="left", fontsize=15, fontweight="bold", color=INK)
-    fig.text(0.012, 0.925,
-             "Left and middle: the two measures for every pair of clans, each on its own scale; darker is "
-             "further apart or more lost.\nRight: the same 28 pairs plotted against each other. "
-             "p-values are two-sided exact Mantel tests over all 40,320 relabellings of the clans.",
-             ha="left", va="top", fontsize=10.5, color=MUTED, linespacing=1.35)
-    fig.tight_layout(rect=(0, 0, 1, 0.86))
+    fig.suptitle(text["headline"], x=0.03, y=0.985, ha="left", fontsize=16, fontweight="bold", color=INK)
+    fig.text(0.03, 0.935,
+             "A coda is one whale call: a short burst of clicks. A clan is a group of whales that share a set of "
+             "codas. EC1 is the Caribbean clan; the other seven are from the Pacific.\n"
+             f"Left: {text['left']}\n"
+             f"Middle: {text['middle']}\n"
+             "Right: the same 28 pairs of clans, with the left measure against the middle one. If more different "
+             "clans predicted each other worse, the dots would rise from left to right.\n"
+             "ρ measures that rise on a scale from -1 to +1, where 0 means no relationship.",
+             ha="left", va="top", fontsize=11, color=MUTED, linespacing=1.45)
+    fig.subplots_adjust(left=0.05, right=0.985, top=0.69, bottom=0.15, wspace=0.3)
     FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG / fname, dpi=150, bbox_inches="tight")
     plt.close(fig)

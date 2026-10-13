@@ -265,13 +265,22 @@ def main():
                     "procrustes_distance", "ordering_lost_bits", "frequency_js_bits"])
         w.writerows(pair_rows)
 
+    plain = {"tempo": "tempo (how long a coda lasts)", "rhythm": "rhythm (the pattern of gaps between clicks)"}
     for num, feature in ((7, "tempo"), (8, "rhythm")):
         D, L, main_test, given_freq = primary[feature]
-        figure(D, L, main_test, given_freq, fname=f"{num}_ordering_{feature}.png",
-               headline=f"{feature.capitalize()} ordering: do clans that sit further apart share less of it?",
-               loss_title="Ordering lost", loss_label="bits per changed pair, mean of both directions",
-               loss_axis="Ordering lost (bits per changed pair)",
-               partial_label="After accounting for token frequencies")
+        figure(D, L, main_test, given_freq, fname=f"{num}_ordering_{feature}.png", text={
+            "headline": f"{feature.capitalize()} only: do clans with a more different order of {feature}s "
+                        "predict each other worse?",
+            "left": f"how different the two clans are in which {feature} tends to follow which. "
+                    f"This looks at {plain[feature]} alone, not the whole coda.",
+            "middle": f"how much worse a clan's next {feature} is predicted when the other clan's order is used "
+                      f"instead of its own. Only pairs of codas where the {feature} changes are counted.",
+            "left_title": f"How different is the order of {feature}s?",
+            "middle_title": "How much worse than a clan's own order?",
+            "middle_scale": "bits per pair of codas (higher = worse; 0 = just as good)",
+            "y": "Worse than the clan's own order by\n(bits per pair of codas)",
+            "control": f"how common each {feature} is in each clan",
+        })
     print("\nwrote results/ordering_drift.csv, ordering_transfer.csv, ordering_drift_pairs.csv, figures 7 and 8")
 
 

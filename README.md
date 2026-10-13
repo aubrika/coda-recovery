@@ -1,142 +1,169 @@
 # coda-recovery
 
-**Does the order of sperm-whale codas carry predictive information, and does it carry over from one clan to another?**
+**Do sperm whales put their calls in a meaningful order, and is that order the same in every clan?**
 
-Python analysis of adjacent sperm-whale codas across eight vocal clans. The project
-compares frequency-based and first-order sequence models on held-out recordings,
-then tests whether sequence models transfer between clans.
+Sperm whales call in short bursts of clicks, called codas. This project uses
+published recordings of eight clans of sperm whales to ask two questions. Does
+knowing the current coda help to predict the next one? And does what is learned from
+one clan help to predict another?
 
-A coda is a patterned burst of clicks. Here each coda is represented by a rhythm
-class and a duration bin. The implementation covers data preparation, recording-level
-cross-validation, conditional baselines, uncertainty estimation, and result figures.
+It is a Python project. The code prepares the data, builds the predictions, tests
+them on recordings that were kept aside, measures how certain the results are, and
+draws the figures.
 
 ## Results
 
-**Knowing the current coda helps predict the next one in every clan, though most of
-that is repetition. With each clan's own coda inventory accounted for, clans do
-appear to order their codas differently, and the difference is in rhythm: how
-duration changes from one coda to the next is largely shared between clans, while
-one clan's rhythm ordering misleads about another's. Procrustes distance between
-clans does not track how much is lost, so the "drift" hypothesis is so far a null
-result.**
+**In short:**
 
-The score is a gain in bits per coda pair: how much better a model that sees the
-current coda predicts the next one than a model that only knows how common each
-coda is, on recordings neither model was fitted to. Above zero means order carries
-information beyond frequency. Tempo (duration) and rhythm (click pattern) are
-scored separately.
+- In every clan, knowing the current coda helps to predict the next one. Most of
+  that help comes from whales repeating the same coda.
+- Clans do seem to put their codas in a different order, and the difference is in
+  rhythm. How the length of one coda follows the length of the one before is much
+  the same in every clan.
+- The hope was that one number, a Procrustes distance, could measure how far two
+  clans' orders have drifted apart. So far it cannot. That is a null result, and it
+  is reported as one.
 
-- **Order is predictive.** Across all adjacent pairs, tempo gains run from +0.15 to
-  +0.86 bits per pair and are clearly above zero in all eight clans. Rhythm gains run
-  from +0.07 to +0.78 and are clearly above zero in seven of eight.
-- **Most of that is repetition.** Whales often repeat a coda, and a repeat is easy to
-  predict. Scoring only the pairs where the coda changes, tempo gains fall to +0.03 to
-  +0.64 and stay clearly above zero in four of eight clans. Rhythm gains fall to
-  between -0.03 and +0.28 and are clearly above zero in none.
-- **A whole model does not transfer between clans, mostly because clans use different
-  codas.** A model fitted on seven clans predicts the eighth clan's changes better than
-  that clan's own coda frequencies for tempo in three of eight clans, and for rhythm in
-  none. That model carries the other clans' coda frequencies with it, so this says
-  little about ordering.
-- **With inventory accounted for, the ordering of whole codas still does not
-  transfer.** A coda is a rhythm and a tempo together. When only the ordering is
-  carried from one clan to another and every coda frequency is the target clan's own,
-  another clan's ordering predicts a clan's changes worse than no ordering at all:
-  -0.15 bits on average (95% interval -0.24 to -0.07), against +0.21 for a clan's own
-  ordering. It helps in 8 of 56 clan-to-clan comparisons.
-- **The difference is in rhythm.** Split into its parts, the tempo-to-tempo ordering
-  does carry over (+0.09 bits, interval +0.02 to +0.14, helping in 45 of 56
-  comparisons). The rhythm-to-rhythm ordering does not (-0.13, interval -0.20 to -0.09,
-  helping in 8 of 56).
+### Words used here
 
-![Changes-only prediction gains with recording-bootstrap intervals](figures/plain/2_current_predicts_next.png)
+| Word | Meaning |
+|---|---|
+| Coda | One whale call: a short burst of clicks. |
+| Clan | A group of whales that share a set of codas. This study has eight: one from the Caribbean (EC1) and seven from the Pacific. |
+| Rhythm | The pattern of gaps between the clicks of a coda. Each coda is placed in one of 18 rhythm classes. |
+| Tempo | How long the whole coda lasts. Each coda is placed in one of five length groups. |
+| Coda type | A rhythm and a tempo together. Two codas are the same type only if both match. |
+| Inventory | Which coda types a clan uses, and how often it uses each one. |
+| Order | Which coda tends to follow which. This is separate from inventory: two clans could use the same codas in a different order, or different codas in the same order. |
+| Bits | The unit of the score. A gain of 1 bit means the prediction was twice as good: it gave twice the probability to the coda that really came next. A gain of 0 means no better, and a gain below 0 means worse. |
 
-![Leave-one-clan-out transfer: a model fitted on the other seven clans against each clan's own model](figures/plain/3_shared_vs_clan_specific.png)
+### How a prediction is scored
 
-"Clearly above zero" means the 95% interval excludes zero. For the first three
-points, intervals come from 500 bootstrap resamples of whole recordings with
-five-fold cross-validation by recording, and the whole-model transfer is a point
-estimate. For the last two, see the next section.
-[Methods and results](SUMMARY.md) has the definitions and the full tables.
+Two predictions of the next coda are compared. The first knows only how common each
+coda is in that clan. The second also knows the current coda. Both are tested on
+recordings that were kept aside and not used to build them. The score is how many
+bits better the second prediction is. If the score is above zero, the order of the
+codas carries information that their frequency alone does not.
 
-### Do clans order their codas differently?
+### What the data show
 
-The hypothesis behind this project is that each clan has its own sequence
-structure, and that the Procrustes distance between two clans' structures could
-serve as a proxy for a kind of "linguistic drift" between them: clans that sit
-further apart should preserve less of each other's predictability. Testing it took
-three attempts, because clans differ first of all in which codas they use, and that
-difference swamps everything else unless it is taken out.
+1. **Order helps.** Counting every pair of codas that follow each other, the gain
+   for tempo is between +0.15 and +0.86 bits in the eight clans, and is clearly above
+   zero in all of them. The gain for rhythm is between +0.07 and +0.78, and is clearly
+   above zero in seven of the eight.
+2. **Most of that is repetition.** Whales often repeat a coda, and a repeat is easy
+   to predict. Counting only the pairs where the coda changes, the gain for tempo
+   falls to between +0.03 and +0.64 and is clearly above zero in four clans. The gain
+   for rhythm falls to between -0.03 and +0.28 and is clearly above zero in none.
+3. **A prediction built from other clans does badly.** A model built from seven clans
+   predicts the eighth clan's changes worse than that clan's own coda frequencies do,
+   on average: -0.11 bits for tempo and -0.68 for rhythm. But this model brings the
+   other clans' inventory with it, and clans use different codas. So this result says
+   little about order.
+4. **With inventory removed, another clan's order still does badly.** This is the
+   main result. It is explained in the next section.
 
-**1. Whole codas, inventory left in.** Across the 28 pairs of clans, Procrustes
-distance tracks how much predictability is lost between them (Spearman ρ = +0.47,
-exact Mantel p = 0.007). But both measures also track how different the two clans'
-coda inventories are, and once that is accounted for nothing is left (partial
-ρ = -0.06, p = 0.77). The distance reflected which codas a clan uses, not how it
-orders them.
+"Clearly above zero" means that the 95% interval does not include zero. For points
+1 and 2 the intervals come from 500 resamples of whole recordings.
 
-**2. One feature at a time, inventory taken out.** Restricted to the tokens every
-clan shares, and with one clan's ordering carried to another as the odds ratios of
-its transition table, tempo ordering turned out to be mostly shared. But clans
-share too few whole coda types for this method, so it could only say how one
-feature is sequenced, not how codas are.
+![Gain when the coda changes, for tempo and rhythm in each clan, with 95% intervals](figures/plain/2_current_predicts_next.png)
 
-**3. Whole codas, inventory taken out.** Each clan's ordering is described by a
-factored model: how the next coda's rhythm and tempo depend on the current coda's
-rhythm and tempo, built from four small tables (rhythm to rhythm, tempo to tempo,
-and the two cross terms) that are dense enough to estimate even where whole coda
-types are rare. To predict clan B from clan A, A's model is rescaled until every
-coda frequency is B's, keeping only A's ordering. Scoring pairs where the coda
-changes:
+![Each clan's own model compared with a model built from the other seven clans](figures/plain/3_shared_vs_clan_specific.png)
 
-| Ordering carried over | A clan's own | Another clan's | Helps in |
+### Do clans put their codas in a different order?
+
+The idea behind this project is that each clan has its own order, and that these
+orders slowly drift apart, as dialects of a language do. If so, a measure of
+distance between two clans' orders should tell us how badly one clan predicts the
+other. The measure tried here is the Procrustes distance (0 means two patterns are
+identical; a larger number means they are more different).
+
+The difficulty is that clans differ first of all in their inventory. That
+difference is large, and it hides everything else unless it is removed. It took
+three attempts to remove it.
+
+**Attempt 1: whole codas, inventory not removed.** Clans that are further apart by
+Procrustes distance do predict each other worse. But both numbers simply follow how
+different the two inventories are. When that is taken into account, no link is
+left. The distance was measuring which codas a clan uses, not their order.
+
+**Attempt 2: one feature at a time, inventory removed.** Looking at tempo alone and
+using only the tempo groups that every clan uses, the order of tempos turned out to
+be mostly shared between clans. But a coda is a rhythm and a tempo together, so
+this says how one feature of a coda behaves, not how codas are ordered. Clans share
+too few whole coda types for this method to work on whole codas.
+
+**Attempt 3: whole codas, inventory removed.** Each clan's order is described by
+four small tables: how the next rhythm depends on the current rhythm, how the next
+tempo depends on the current tempo, and the two mixed cases (rhythm to next tempo,
+tempo to next rhythm). These small tables can be measured well even when a whole
+coda type is rare. To predict clan B with clan A's order, A's tables are combined
+with B's own inventory, so the only thing taken from A is its order.
+
+The table below shows the result for pairs where the coda changes. "Own order" is a
+clan predicted with its own order. "Another clan's order" is a clan predicted with a
+different clan's order, averaged over all 56 such combinations. The numbers are
+gains in bits, with 95% intervals in brackets.
+
+| Which order is used | Own order | Another clan's order | Better than no order in |
 |---|---:|---:|---:|
-| Tempo to tempo | +0.17 (+0.10 to +0.24) | +0.09 (+0.02 to +0.14) | 45 of 56 |
-| Rhythm to rhythm | +0.10 (-0.03 to +0.17) | -0.13 (-0.20 to -0.09) | 8 of 56 |
+| Tempo to tempo only | +0.17 (+0.10 to +0.24) | +0.09 (+0.02 to +0.14) | 45 of 56 |
+| Rhythm to rhythm only | +0.10 (-0.03 to +0.17) | -0.13 (-0.20 to -0.09) | 8 of 56 |
 | Whole coda | +0.21 (+0.04 to +0.32) | -0.15 (-0.24 to -0.07) | 8 of 56 |
 
-Gains are bits per changed pair, averaged over clans, with 95% intervals.
+What this shows:
 
-- **Clans order whole codas differently.** Another clan's ordering does not merely
-  fail to help; it predicts worse than using no ordering. This holds among the seven
-  Pacific clans alone (helping in 5 of 42 comparisons).
-- **The difference is in rhythm, not tempo.**
-- **Rhythm and tempo do not appear to interact.** The cross terms add nothing to a
-  clan's own gain, so a coda's ordering looks like its rhythm ordering plus its tempo
-  ordering.
-- **The method does not manufacture this.** When all eight clans are simulated from
-  one shared ordering, each on its real inventory and recording sizes, the same
-  analysis reports that another clan's ordering helps in 55 or 56 of 56 comparisons.
-- **Distance still does not track what is lost.** Procrustes distance between clans'
-  ordering against ordering lost gives ρ = +0.21, p = 0.34.
+- **Clans put whole codas in a different order.** Using another clan's order is
+  worse than using no order at all. It gives the wrong idea of what comes next. This
+  is also true among the seven Pacific clans alone (better than no order in only 5 of
+  42 combinations).
+- **The difference is in rhythm, not tempo.** Another clan's tempo order still
+  helps. Another clan's rhythm order does harm.
+- **Rhythm and tempo seem to be ordered separately.** The two mixed tables add
+  nothing to a clan's own score.
+- **The method does not create this result by itself.** As a check, all eight clans
+  were simulated with one shared order, each with its real inventory and its real
+  number of recordings. The same analysis then finds that another clan's order helps
+  in 55 or 56 of the 56 combinations.
+- **Procrustes distance still does not measure the difference.** Clans whose orders
+  are further apart by this distance do not predict each other clearly worse
+  (ρ = +0.21, p = 0.34).
 
-![Whole codas: Procrustes distance and ordering lost for every pair of clans](figures/plain/9_ordering_coda.png)
+In the last point, ρ (rho) is a number from -1 to +1 that says how strongly two
+measures rise together; 0 means no link. p is the chance of seeing a link this
+strong if there were really none; a p above 0.05 is usually read as "this could
+easily be chance".
 
-**Where this leaves the question.** Clans share how a coda's duration follows the
-last one, and differ in how its rhythm does. Whether that difference grows in a way
-a distance can measure is not shown: the drift hypothesis remains a null result.
+![Whole codas: how different each pair of clans is, how much worse they predict each other, and one against the other](figures/plain/9_ordering_coda.png)
 
-Limits worth knowing:
+**Where this leaves the question.** Clans share how the length of a coda follows
+the one before, and differ in how its rhythm does. Whether that difference grows in
+a way that a distance can measure has not been shown.
 
-- The intervals cover which recordings are held out and scored. They do not cover
-  sampling of the recordings the models learn from.
-- Rhythm classes come from Caribbean reference patterns. Pacific codas are assigned
-  to the nearest one, which is approximate, and a clan's own rhythm ordering is only
-  weakly predictive to begin with (its interval reaches zero).
-- Duration bins are ordered, so successive codas of similar length land in
-  neighbouring bins in any clan. Some of the shared tempo ordering may be duration
-  changing smoothly, not a sequencing rule.
-- With repeats included, most ordering carries over, because every clan repeats
-  codas, and distance does track what is lost (ρ = +0.49, p = 0.04). That was not
-  the planned test and it weakens once inventory is accounted for (ρ = +0.35,
-  p = 0.14), so it is noted and not claimed.
-- An earlier version of this project claimed a shared tempo rule and clan-specific
-  rhythm, and withdrew the claim because its baseline was unfair (see
-  [History and corrections](#history-and-corrections)). The result here is similar
-  in outline but rests on a different method, and should be judged on that.
+Things to keep in mind:
 
-[Methods and results](SUMMARY.md#whole-codas-with-inventory-taken-out) has the
-definitions, the checks and the full tables.
+- **The intervals are partial.** They show how much the result changes with the
+  choice of recordings kept aside for testing. They do not show how much it would
+  change with a different set of recordings to build the models from.
+- **Rhythm is the weaker part.** The rhythm classes come from Caribbean codas.
+  Pacific codas are placed in the nearest class, which is only approximate. Also, a
+  clan's own rhythm order predicts its changes only weakly: its interval reaches zero.
+- **Shared tempo order may be simple.** The length groups run from short to long, so
+  two codas of similar length fall in the same or a neighbouring group in any clan.
+  Some of the shared tempo order may be this, and not a rule about order.
+- **One result was not planned and is not claimed.** When repeated codas are counted
+  too, most order is shared, because every clan repeats codas, and Procrustes
+  distance does follow how much worse clans predict each other (ρ = +0.49, p = 0.04).
+  The planned test counted changes only, and this link becomes weaker once inventory
+  is taken into account (ρ = +0.35, p = 0.14).
+- **A similar claim was made before and withdrawn.** An earlier version of this
+  project said that tempo order is shared and rhythm order is not, and took the claim
+  back because its comparison was unfair (see
+  [History and corrections](#history-and-corrections)). The result here looks similar
+  but comes from a different method, and should be judged on that method.
+
+[Methods and results](SUMMARY.md) gives the exact definitions, the checks and the
+full tables for all three attempts.
 
 ## What this does *not* show
 

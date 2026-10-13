@@ -13,9 +13,11 @@ cross-validation, conditional baselines, uncertainty estimation, and result figu
 ## Results
 
 **Knowing the current coda helps predict the next one in every clan. The advantage
-shrinks sharply once repeated codas are set aside. Whether it carries over between
-clans depends on what is carried: a clan's coda frequencies do not transfer, but
-its tempo ordering largely does.**
+shrinks sharply once repeated codas are set aside. Whether clans order their codas
+differently is not yet answered: a whole model does not transfer between clans, but
+that is mostly because clans use different codas. One feature of a coda, its tempo,
+follows a largely shared pattern. The ordering of whole codas has not been tested
+with inventory accounted for.**
 
 The score is a gain in bits per coda pair: how much better a model that sees the
 current coda predicts the next one than a model that only knows how common each
@@ -34,11 +36,13 @@ scored separately.
   predicts the eighth clan's changes better than that clan's own coda frequencies for
   tempo in three of eight clans (EC1, REG, SI), and for rhythm in none. On average it
   does worse than frequencies alone: -0.11 bits for tempo and -0.68 for rhythm.
-- **Tempo ordering, taken alone, mostly does.** That model carries the other clans'
-  coda frequencies with it. When only the ordering is carried over and the frequencies
-  are the target clan's own, another clan's tempo ordering improves prediction in 42
-  of 56 clan-to-clan comparisons, and gains +0.07 bits on average against +0.10 for
-  a clan's own ordering. Rhythm cannot be tested this way yet (see below).
+- **One feature, tempo, mostly does.** That model carries the other clans' coda
+  frequencies with it. When only the ordering is carried over and the frequencies are
+  the target clan's own, another clan's tempo ordering improves prediction in 42 of 56
+  clan-to-clan comparisons, and gains +0.07 bits on average against +0.10 for a
+  clan's own ordering. This is about how duration changes from one coda to the next.
+  A coda is a rhythm and a tempo together, and the ordering of whole codas is not
+  tested by it (see below).
 
 ![Changes-only prediction gains with recording-bootstrap intervals](figures/plain/2_current_predicts_next.png)
 
@@ -67,10 +71,14 @@ uses, not how it orders them.
 
 ![Procrustes distance and predictability lost for every pair of clans, and the two plotted against each other](figures/plain/6_distance_vs_predictability.png)
 
-**Second test: ordering alone.** Both measures were rebuilt so that inventory
-cannot drive them. Each is restricted to the tokens every clan uses, and one clan's
-ordering is carried to another as the odds ratios of its transition table, with
-every frequency taken from the clan being predicted. On those terms:
+**Second test: ordering alone, one feature at a time.** Both measures were rebuilt
+so that inventory cannot drive them. Each is restricted to the tokens every clan
+uses, and one clan's ordering is carried to another as the odds ratios of its
+transition table, with every frequency taken from the clan being predicted. Clans
+share too few whole coda types for this, so it was run on tempo and on rhythm
+separately. It therefore says how one feature of a coda is sequenced, not how codas
+are. Two clans could move between short and long codas in the same way while
+ordering entirely different rhythms. On those terms:
 
 - **Tempo ordering is mostly shared.** How well a clan's tempo changes can be
   predicted depends on which clan is being predicted, and hardly at all on which
@@ -82,8 +90,10 @@ every frequency taken from the clan being predicted. On those terms:
 
 ![Tempo ordering: Procrustes distance and ordering lost for every pair of clans](figures/plain/7_ordering_tempo.png)
 
-**What is still open.** Ordering itself has now been tested with inventory
-accounted for, but only for tempo and only this far:
+**What is still open.** The main question is: do clans order whole codas
+differently, once the difference in their inventories is accounted for? The first
+test was at the level of whole codas but was driven by inventory. The second
+removed inventory but dropped to single features. Beyond that:
 
 - The transfer scores are point estimates without intervals.
 - Tempo here is four duration bins. Successive codas of similar length will land in
@@ -92,8 +102,8 @@ accounted for, but only for tempo and only this far:
 - With repeats included, tempo does show the predicted relationship (ρ = +0.52,
   p = 0.04). It is one of four comparisons, unadjusted, and was not the planned
   test, so it is noted here and not claimed.
-- Rhythm, and rhythm and tempo combined, need a comparison that works when clans
-  share few tokens. No combined token is common to all eight clans.
+- Whole codas need a comparison that works when clans share few coda types. No
+  rhythm-and-tempo combination is common to all eight clans.
 
 [Methods and results](SUMMARY.md#ordering-with-inventory-taken-out) has the
 definitions and full tables.

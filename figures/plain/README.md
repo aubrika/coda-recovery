@@ -13,9 +13,10 @@ None is edited by hand.
 | `6_distance_vs_predictability.png` | `drift` | fetched data | Figures 4 and 5 compared pair by pair, with exact Mantel tests |
 | `7_ordering_tempo.png` | `ordering_drift` | fetched data | Tempo, changes only, shared duration bins: Procrustes distance against ordering lost |
 | `8_ordering_rhythm.png` | `ordering_drift` | fetched data | The same for the shared rhythm classes, where clans' own gains are near zero |
+| `9_ordering_coda.png` | `coda_ordering` | fetched data | Whole codas, changes only, factored model: Procrustes distance between clans' ordering against ordering lost |
 
 Figure 2 needs `predictive_info_sweep` to have run first. The numbers behind figures
-3 to 8 are saved alongside them in `results/` by the same scripts.
+3 to 9 are saved alongside them in `results/` by the same scripts.
 
 ## Checking them
 

@@ -244,6 +244,102 @@ All of it is in [ordering_drift.csv](results/ordering_drift.csv),
 
 ![Tempo ordering](figures/plain/7_ordering_tempo.png)
 
+## Whole codas, with inventory taken out
+
+The single-feature analysis cannot say how codas are ordered, because a coda is a
+rhythm and a tempo together and clans share too few whole coda types to compare
+their transition tables. `coda_ordering` describes each clan's ordering with a
+factored model instead. Its design and its primary analysis (changes only) were
+fixed before it was run on the data.
+
+**Model.** Transitions are counted in a four-way table: current rhythm and tempo,
+next rhythm and tempo. A log-linear model is fitted by iterative proportional
+fitting to six of its margins. Two are inventory: how common each coda type is as
+the current coda and as the next. Four are ordering: rhythm to rhythm, tempo to
+tempo, rhythm to next tempo, and tempo to next rhythm. Counts carry a uniform prior
+worth 0.5 pseudo-pairs per rhythm-to-rhythm cell. Under changes-only scoring a
+repeat of the same coda is a structural zero.
+
+**Carrying ordering over.** To predict clan B from clan A, A's fitted table is
+rescaled to B's two inventory margins. This keeps every odds ratio between current
+and next coda from A and takes every coda frequency from B. The gain is scored on
+B's held-out recordings (a third held out, 15 times) against the table with B's
+inventory and no dependence of next on current. An ordering that says nothing
+scores zero; one that is confidently different scores below zero.
+
+**Checks on synthetic data**, in the test suite: a clan with the same ordering on a
+different inventory transfers over 90% of the gain; a clan with no ordering
+transfers none; unrelated orderings score below zero on average; cross terms are
+detected when present and not otherwise.
+
+Changes only, mean over clans, bits per changed pair:
+
+| Model | Own gain | 95% interval | Another clan's | 95% interval | Helps in |
+|---|---:|---:|---:|---:|---:|
+| Tempo to tempo only | +0.17 | +0.10 to +0.24 | +0.09 | +0.02 to +0.14 | 45 of 56 |
+| Rhythm to rhythm only | +0.10 | -0.03 to +0.17 | -0.13 | -0.20 to -0.09 | 8 of 56 |
+| Both, no cross terms | +0.22 | +0.07 to +0.31 | -0.05 | -0.16 to +0.02 | 21 of 56 |
+| Factored (all four) | +0.21 | +0.04 to +0.32 | -0.15 | -0.24 to -0.07 | 8 of 56 |
+| Full table, not factored | -0.42 | | | | |
+
+All pairs, repeats included:
+
+| Model | Own gain | 95% interval | Another clan's | 95% interval | Helps in |
+|---|---:|---:|---:|---:|---:|
+| Tempo to tempo only | +0.34 | +0.25 to +0.41 | +0.26 | +0.16 to +0.33 | 55 of 56 |
+| Rhythm to rhythm only | +0.39 | +0.22 to +0.45 | +0.18 | +0.04 to +0.25 | 50 of 56 |
+| Both, no cross terms | +0.58 | +0.39 to +0.68 | +0.32 | +0.15 to +0.43 | 52 of 56 |
+| Factored (all four) | +0.59 | +0.41 to +0.70 | +0.24 | +0.07 to +0.34 | 46 of 56 |
+| Full table, not factored | +0.17 | | | | |
+
+Reading the tables:
+
+- The unfactored table over whole coda types is too sparse to estimate, and scores
+  below frequencies alone on changes. The factored model is what makes the question
+  answerable.
+- Cross terms do not raise a clan's own gain, and they make transfer worse.
+- On changes, tempo ordering carries over and rhythm ordering misleads. With repeats
+  included most ordering carries over, because every clan repeats codas.
+- Among the seven Pacific clans alone, another clan's whole-coda ordering helps in 5
+  of 42 comparisons on changes (mean -0.12, against +0.15 for their own).
+
+**Intervals.** 200 replicates. Each holds out a fresh third of every clan's
+recordings and resamples the held-out recordings with replacement; models are
+refitted on the training recordings. Training recordings are not resampled: doing
+so leaves about a third fewer distinct recordings to learn from, lowers every gain,
+and produced intervals that did not contain the estimates. The intervals therefore
+cover which recordings are held out and scored, not sampling of the training set.
+
+**Calibration.** To check that the analysis does not produce negative transfer by
+itself at these sample sizes, all eight clans were simulated five times from one
+ordering (a factored model fitted to all clans pooled), each on its own inventory
+and with its own recording sizes. On changes, the factored model then reports
+another clan's ordering gaining +0.41 bits against +0.56 for a clan's own, helping
+in 55 or 56 of 56 comparisons. The simulated ordering is stronger than any real
+clan's, so this shows the direction the method takes, not its exact power.
+
+**Distance.** Each clan's fitted table is rescaled to one pooled inventory, so that
+tables differ only in ordering. Standardized residuals from independence are
+embedded in five dimensions and compared by Procrustes distance.
+
+| Scoring | Distance vs ordering lost, ρ | p | Given inventory divergence, ρ | p |
+|---|---:|---:|---:|---:|
+| Changes only | +0.21 | 0.34 | +0.13 | 0.55 |
+| All pairs | +0.49 | 0.036 | +0.35 | 0.14 |
+
+The planned comparison shows no relationship. Ordering lost still rises with
+inventory divergence (ρ = +0.70 on changes), so clans that use different codas
+also order them differently, or are harder to compare; this analysis cannot tell
+which. The Caribbean clan accounts for the largest losses.
+
+Outputs: [coda_ordering.csv](results/coda_ordering.csv),
+[coda_ordering_models.csv](results/coda_ordering_models.csv),
+[coda_ordering_bootstrap.csv](results/coda_ordering_bootstrap.csv),
+[coda_ordering_shared_null.csv](results/coda_ordering_shared_null.csv) and
+[coda_ordering_pairs.csv](results/coda_ordering_pairs.csv).
+
+![Whole-coda ordering](figures/plain/9_ordering_coda.png)
+
 ## Artifacts
 
 | Output | Script |
@@ -253,6 +349,7 @@ All of it is in [ordering_drift.csv](results/ordering_drift.csv),
 | Pairwise CSV, figures 4 and 5 | `clan_similarity` |
 | Mantel tests, per-pair CSV, figure 6 | `drift` |
 | Ordering-only transfer and Mantel tests, figures 7 and 8 | `ordering_drift` |
+| Whole-coda factored model, transfer, intervals, calibration, figure 9 | `coda_ordering` |
 | Native vs pooled EC1 CSV | `ec1_pacified` |
 | Token-count overview, figure 1 | `plain_figures` |
 

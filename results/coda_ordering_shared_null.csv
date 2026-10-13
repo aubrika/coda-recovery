@@ -1,0 +1,9 @@
+scoring,model,simulations,own_mean,foreign_mean,foreign_min,foreign_max,helped_min,helped_max
+changes only,tempo→tempo only,5,0.2577,0.2303,0.2214,0.2401,56,56
+changes only,rhythm→rhythm only,5,0.3046,0.2078,0.1993,0.217,53,56
+changes only,"both, no cross terms",5,0.5393,0.4369,0.4287,0.4439,56,56
+changes only,factored,5,0.5579,0.4088,0.4011,0.425,55,56
+all pairs,tempo→tempo only,5,0.5023,0.4793,0.47,0.4874,56,56
+all pairs,rhythm→rhythm only,5,0.6861,0.6117,0.6058,0.6281,56,56
+all pairs,"both, no cross terms",5,0.9809,0.9,0.89,0.9117,56,56
+all pairs,factored,5,1.0032,0.8889,0.8787,0.9071,56,56

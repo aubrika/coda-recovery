@@ -1,0 +1,27 @@
+scoring,analysis,clans,rho,p_positive,p_negative,p_two_sided,permutations
+changes only,distance vs ordering lost,8,0.207444,0.16684,0.834102,0.337426,40320
+changes only,distance vs ordering lost | inventory divergence,8,0.127308,0.274554,0.725471,0.550496,40320
+changes only,distance vs inventory divergence,8,0.168035,0.216567,0.784127,0.433209,40320
+changes only,ordering lost vs inventory divergence,8,0.704433,0.003695,0.996354,0.003695,40320
+changes only,Pacific only: distance vs ordering lost,7,0.353247,0.056746,0.944048,0.125992,5040
+changes only,without EC1: distance vs ordering lost,7,0.353247,0.056746,0.944048,0.125992,5040
+changes only,without REG: distance vs ordering lost,7,0.322078,0.07619,0.925,0.130952,5040
+changes only,without SH: distance vs ordering lost,7,0.076623,0.375794,0.626786,0.719841,5040
+changes only,without FP: distance vs ordering lost,7,0.177922,0.235317,0.764881,0.491865,5040
+changes only,without PALI: distance vs ordering lost,7,0.227273,0.212302,0.789683,0.424206,5040
+changes only,without PO: distance vs ordering lost,7,0.266234,0.155556,0.845635,0.344246,5040
+changes only,without RI: distance vs ordering lost,7,0.176623,0.272421,0.729563,0.520238,5040
+changes only,without SI: distance vs ordering lost,7,0.124675,0.28631,0.714683,0.627778,5040
+all pairs,distance vs ordering lost,8,0.490969,0.016047,0.984053,0.036235,40320
+all pairs,distance vs ordering lost | inventory divergence,8,0.352882,0.069792,0.930233,0.144395,40320
+all pairs,distance vs inventory divergence,8,0.45156,0.015551,0.984648,0.038269,40320
+all pairs,ordering lost vs inventory divergence,8,0.472906,0.051438,0.94881,0.065427,40320
+all pairs,Pacific only: distance vs ordering lost,7,0.376623,0.068452,0.932143,0.136706,5040
+all pairs,without EC1: distance vs ordering lost,7,0.376623,0.068452,0.932143,0.136706,5040
+all pairs,without REG: distance vs ordering lost,7,0.588312,0.008135,0.992063,0.015675,5040
+all pairs,without SH: distance vs ordering lost,7,0.503896,0.024603,0.975992,0.047024,5040
+all pairs,without FP: distance vs ordering lost,7,0.580519,0.006349,0.994048,0.023413,5040
+all pairs,without PALI: distance vs ordering lost,7,0.419481,0.053571,0.947619,0.115079,5040
+all pairs,without PO: distance vs ordering lost,7,0.562338,0.028968,0.97123,0.069444,5040
+all pairs,without RI: distance vs ordering lost,7,0.41039,0.049802,0.950992,0.106944,5040
+all pairs,without SI: distance vs ordering lost,7,0.407792,0.081944,0.918452,0.151587,5040
